@@ -2,9 +2,9 @@
 
 use console_error_panic_hook::set_once as set_panic_hook;
 
-mod text_input;
-
 mod app;
+mod progress;
+mod searchbar;
 
 use app::App;
 

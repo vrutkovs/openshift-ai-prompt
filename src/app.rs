@@ -1,14 +1,15 @@
-use yew::prelude::*;
 use gloo::console;
+use yew::prelude::*;
+
+use crate::progress::ProgressBar;
+use crate::searchbar::SearchBar;
 
 #[derive(Debug, Default)]
-pub struct App {
-    prompt: String,
-}
+pub struct App;
 
 pub enum Msg {
-    Prompt,
-    Progress
+    Prompt(AttrValue),
+    Progress,
 }
 
 impl Component for App {
@@ -16,15 +17,13 @@ impl Component for App {
     type Properties = ();
 
     fn create(_: &Context<Self>) -> Self {
-        Self {
-          prompt: "A person wearing red fedora in style of Picasso".to_string()
-        }
+        Self
     }
 
     fn update(&mut self, _: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Prompt => {
-                console::log!("generating prompt %s", self.prompt.clone());
+            Msg::Prompt(prompt) => {
+                console::log!("generating prompt %s", prompt.as_str());
                 true
             }
             Msg::Progress => {
@@ -35,16 +34,15 @@ impl Component for App {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
+        let on_generate = ctx.link().callback(Msg::Prompt);
         html! {
           <div class="flex flex-col h-screen">
             <nav class="h-screen items-center px-4 py-4 bg-gray-300 flex-col">
-              <form class="w-full flex mb-4">
-                <input type="text" class="bg-white w-full h-12 px-4 rounded-lg focus:outline-none hover:cursor-pointer" name="" value={ self.prompt.clone() }/>
-                <button class="btn btn-blue w-1/10 h-12 px-4" onclick={ctx.link().callback(|_| Msg::Prompt)}>
-                  <i class="fa-solid fa-search"></i>
-                </button>
-              </form>
+              <SearchBar {on_generate}/>
             </nav>
+            <div>
+              <ProgressBar />
+            </div>
           </div>
         }
     }
