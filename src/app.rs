@@ -1,9 +1,9 @@
 use gloo::console;
 use yew::prelude::*;
 
+use crate::components::progress::ProgressBar;
+use crate::components::searchbar::SearchBar;
 use crate::generate;
-use crate::progress::ProgressBar;
-use crate::searchbar::SearchBar;
 
 #[derive(Debug, Default)]
 pub struct App {
