@@ -1,0 +1,10 @@
+[package]
+name = "openshift-ai-prompt"
+version = "0.1.0"
+authors = ["Vadim Rutkovsky <vadim@vrutkovs.eu>"]
+edition = "2018"
+
+[dependencies]
+console_error_panic_hook = "0.1"
+wasm-bindgen = "0.2"
+yew = "0.18"
