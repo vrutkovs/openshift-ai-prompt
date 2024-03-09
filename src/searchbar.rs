@@ -1,4 +1,3 @@
-use gloo::console;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew::Properties;
@@ -41,12 +40,12 @@ impl Component for SearchBar {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
-            <div class="w-full flex mb-4">
-                <input ref={self.input_ref.clone()} type="text" class="bg-white w-full h-12 px-4 rounded-lg focus:outline-none hover:cursor-pointer" name="" value={ self.input.clone() }/>
-                <button class="btn btn-blue w-1/10 h-12 px-4" onclick={ctx.link().callback(|_| Msg::Generate)}>
+            <nav class="items-center px-4 py-4 bg-gray-300 flex">
+                <input ref={self.input_ref.clone()} type="text" class="bg-white flex-grow h-12 px-4 rounded-lg focus:outline-none hover:cursor-pointer" name="" value={ self.input.clone() }/>
+                <button class="btn btn-blue w-1/10 h-12 px-4 flew-grow-0" onclick={ctx.link().callback(|_| Msg::Generate)}>
                 <i class="fa-solid fa-search"></i>
                 </button>
-            </div>
+            </nav>
         }
     }
 }
