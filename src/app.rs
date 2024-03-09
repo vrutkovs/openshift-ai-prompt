@@ -1,6 +1,7 @@
 use gloo::console;
 use yew::prelude::*;
 
+use crate::components::picture::Picture;
 use crate::components::progress::ProgressBar;
 use crate::components::searchbar::SearchBar;
 use crate::generate;
@@ -9,6 +10,7 @@ use crate::generate;
 pub struct App {
     status: String,
     progress: f32,
+    result: Option<String>,
 }
 
 pub enum Msg {
@@ -25,6 +27,7 @@ impl Component for App {
         Self {
             status: String::from(""),
             progress: 0.0,
+            result: None,
         }
     }
 
@@ -33,6 +36,7 @@ impl Component for App {
             Msg::Prompt(prompt) => {
                 console::log!("generating prompt %s", prompt.as_str());
 
+                self.result = None;
                 let on_progress = ctx.link().callback(Msg::Progress);
                 let on_result = ctx.link().callback(Msg::Result);
                 generate::generate_image(on_progress, on_result);
@@ -43,7 +47,10 @@ impl Component for App {
                 self.progress = progress;
                 true
             }
-            Msg::Result(_) => true,
+            Msg::Result(url) => {
+                self.result = Some(url.to_string());
+                true
+            }
         }
     }
 
@@ -54,6 +61,7 @@ impl Component for App {
           <div class="flex flex-col h-screen">
             <SearchBar {on_generate}/>
             <ProgressBar message={self.status.clone()} percent={self.progress} />
+            <Picture url={self.result.clone()}/>
           </div>
         }
     }
