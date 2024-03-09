@@ -11,5 +11,5 @@ use app::App;
 fn main() {
     set_panic_hook();
 
-    yew::start_app::<App>();
+    yew::Renderer::<App>::new().render();
 }

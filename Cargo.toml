@@ -7,4 +7,5 @@ edition = "2018"
 [dependencies]
 console_error_panic_hook = "0.1"
 wasm-bindgen = "0.2"
-yew = "0.18"
+yew = {version="0.21", features = ["csr"]}
+gloo = "0.11"
