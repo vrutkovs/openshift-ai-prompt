@@ -7,6 +7,8 @@ use tokio_tungstenite::{
     tungstenite::{Error, Message, Result},
 };
 
+mod k8s_job;
+
 async fn accept_connection(peer: SocketAddr, stream: TcpStream) {
     if let Err(e) = handle_connection(peer, stream).await {
         match e {
@@ -22,17 +24,16 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
     let (mut ws_sender, mut ws_receiver) = ws_stream.split();
     let mut interval = tokio::time::interval(Duration::from_millis(1000));
 
-    // Echo incoming WebSocket messages and send a message periodically every second.
-
+    // Wait for message to be received
     loop {
         tokio::select! {
             msg = ws_receiver.next() => {
                 match msg {
                     Some(msg) => {
                         let msg = msg?;
-                        if msg.is_text() ||msg.is_binary() {
-                            ws_sender.send(msg).await?;
-                        } else if msg.is_close() {
+                        if msg.is_text() {
+                            k8s_job::start(msg.to_string()).await?;
+                        } else if msg.is_close() || msg.is_binary() {
                             break;
                         }
                     }
