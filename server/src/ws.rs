@@ -12,10 +12,9 @@ pub enum WSMessageType {
 
 #[derive(Default, Serialize)]
 pub struct WSMessage {
+    #[serde(rename(serialize = "type", deserialize = "type"))]
     msgtype: WSMessageType,
-    status: Option<String>,
-    url: Option<String>,
-    error: Option<String>,
+    message: Option<String>,
 }
 
 pub trait AsWS {
@@ -34,23 +33,20 @@ impl AsWS for WSMessage {
 pub fn progress(status: &str) -> WSMessage {
     WSMessage {
         msgtype: WSMessageType::Progress,
-        status: Some(status.to_string()),
-        ..Default::default()
+        message: Some(status.to_string()),
     }
 }
 
 pub fn result(url: String) -> WSMessage {
     WSMessage {
         msgtype: WSMessageType::Result,
-        url: Some(url),
-        ..Default::default()
+        message: Some(url),
     }
 }
 
 pub fn error(error: Error) -> WSMessage {
     WSMessage {
         msgtype: WSMessageType::Error,
-        error: Some(error.to_string()),
-        ..Default::default()
+        message: Some(error.to_string()),
     }
 }
