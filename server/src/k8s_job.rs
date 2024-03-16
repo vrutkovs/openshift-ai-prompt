@@ -1,4 +1,7 @@
-use crate::{ws, Message};
+use crate::{
+    ws::{self, AsWS},
+    Message,
+};
 use futures_util::{stream::SplitSink, SinkExt};
 use tokio::net::TcpStream;
 use tokio_tungstenite::WebSocketStream;
@@ -35,7 +38,7 @@ pub async fn start(
     prompt: String,
     ws_sender: &mut SplitSink<WebSocketStream<TcpStream>, Message>,
 ) -> Result<String, anyhow::Error> {
-    ws_sender.send(ws::status_message("Starting")).await?;
+    ws_sender.send(ws::progress("Starting").as_ws()).await?;
 
     let s3_settings = S3Settings::init_from_env()?;
     let job_settings = JobSettings::init_from_env()?;
@@ -58,9 +61,7 @@ pub async fn start(
     let data = jobs.create(&PostParams::default(), &job_json).await?;
     let job_name = data.name_any();
     ws_sender
-        .send(ws::status_message(
-            format!("Created job {job_name}").as_str(),
-        ))
+        .send(ws::progress(format!("Created job {job_name}").as_str()).as_ws())
         .await?;
 
     let cond = await_condition(jobs.clone(), &job_name, conditions::is_job_completed());
@@ -68,7 +69,9 @@ pub async fn start(
         tokio::time::timeout(std::time::Duration::from_secs(job_settings.timeout), cond).await?;
     jobs.delete(&job_name, &DeleteParams::background()).await?;
 
-    ws_sender.send(ws::status_message("Job completed")).await?;
+    ws_sender
+        .send(ws::progress("Job completed").as_ws())
+        .await?;
     let bucket = s3_settings.s3_bucket;
     Ok(format!(
         "https://{bucket}.s3.amazonaws.com/{result_filename}"

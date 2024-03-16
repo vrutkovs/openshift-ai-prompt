@@ -8,6 +8,8 @@ use tokio_tungstenite::{
     tungstenite::{Error, Message, Result},
 };
 
+use crate::ws::AsWS;
+
 mod k8s_job;
 mod ws;
 
@@ -34,8 +36,8 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
                         let msg = msg?;
                         if msg.is_text() {
                             match k8s_job::start(msg.to_string(), &mut ws_sender).await {
-                                Err(e) => ws_sender.send(ws::error_message(e)).await?,
-                                Ok(url) => ws_sender.send(ws::result(url)).await?,
+                                Err(e) => ws_sender.send(ws::error(e).as_ws()).await?,
+                                Ok(url) => ws_sender.send(ws::result(url).as_ws()).await?,
                             };
                         } else if msg.is_close() || msg.is_binary() {
                             break;

@@ -18,38 +18,39 @@ pub struct WSMessage {
     error: Option<String>,
 }
 
-pub fn status_message(status: &str) -> Message {
-    let msg = WSMessage {
+pub trait AsWS {
+    fn as_ws(&self) -> Message;
+}
+
+impl AsWS for WSMessage {
+    fn as_ws(&self) -> Message {
+        match serde_json::to_string(&self) {
+            Ok(j) => Message::Text(j.to_owned()),
+            Err(e) => Message::Text(e.to_string()),
+        }
+    }
+}
+
+pub fn progress(status: &str) -> WSMessage {
+    WSMessage {
         msgtype: WSMessageType::Progress,
         status: Some(status.to_string()),
         ..Default::default()
-    };
-    match serde_json::to_string(&msg) {
-        Ok(j) => Message::Text(j.to_owned()),
-        Err(e) => Message::Text(e.to_string()),
     }
 }
 
-pub fn result(url: String) -> Message {
-    let msg = WSMessage {
+pub fn result(url: String) -> WSMessage {
+    WSMessage {
         msgtype: WSMessageType::Result,
         url: Some(url),
         ..Default::default()
-    };
-    match serde_json::to_string(&msg) {
-        Ok(j) => Message::Text(j.to_owned()),
-        Err(e) => Message::Text(e.to_string()),
     }
 }
 
-pub fn error_message(error: Error) -> Message {
-    let msg = WSMessage {
+pub fn error(error: Error) -> WSMessage {
+    WSMessage {
         msgtype: WSMessageType::Error,
         error: Some(error.to_string()),
         ..Default::default()
-    };
-    match serde_json::to_string(&msg) {
-        Ok(j) => Message::Text(j.to_owned()),
-        Err(e) => Message::Text(e.to_string()),
     }
 }
