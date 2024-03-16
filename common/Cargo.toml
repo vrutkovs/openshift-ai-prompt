@@ -1,0 +1,11 @@
+[package]
+name = "openshift-ai-prompt-common"
+version = "0.1.0"
+authors = ["Vadim Rutkovsky <vadim@vrutkovs.eu>"]
+edition = "2021"
+
+[dependencies]
+tokio-tungstenite = "0.21.0"
+serde = "1.0"
+serde_json = "1.0"
+anyhow = "1.0.71"

@@ -8,10 +8,9 @@ use tokio_tungstenite::{
     tungstenite::{Error, Message, Result},
 };
 
-use crate::ws::AsWS;
+use openshift_ai_prompt_common::ws::{self, AsWS};
 
 mod k8s_job;
-mod ws;
 
 async fn accept_connection(peer: SocketAddr, stream: TcpStream) {
     if let Err(e) = handle_connection(peer, stream).await {

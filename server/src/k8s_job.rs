@@ -1,8 +1,6 @@
-use crate::{
-    ws::{self, AsWS},
-    Message,
-};
+use crate::Message;
 use futures_util::{stream::SplitSink, SinkExt};
+use openshift_ai_prompt_common::ws::{self, AsWS};
 use tokio::net::TcpStream;
 use tokio_tungstenite::WebSocketStream;
 
