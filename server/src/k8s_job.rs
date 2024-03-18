@@ -125,13 +125,24 @@ pub fn create_job_for_prompt(
                     "containers": [{
                         "name": "generate",
                         "image": image,
-                        "env": {
-                            "PROMPT": prompt,
-                            "RESULT_FILENAME": result_filename,
-                            "AWS_ACCESS_KEY": s3_settings.s3_key,
-                            "AWS_ACCESS_SECRET": s3_settings.s3_secret,
-                            "S3_BUCKET_NAME": s3_settings.s3_bucket,
-                        },
+                        "env": [
+                            {
+                                "name": "PROMPT",
+                                "value": prompt,
+                            }, {
+                                "name": "RESULT_FILENAME",
+                                "value": result_filename,
+                            }, {
+                                "name": "AWS_ACCESS_KEY",
+                                "value": s3_settings.s3_key,
+                            }, {
+                                "name": "AWS_ACCESS_SECRET",
+                                "value": s3_settings.s3_secret,
+                            }, {
+                                "name": "S3_BUCKET_NAME",
+                                "value": s3_settings.s3_bucket,
+                            }
+                        ],
                         "resources": {
                             "limits": {
                                 "nvidia.com/gpu": 1,
