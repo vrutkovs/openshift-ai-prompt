@@ -1,4 +1,5 @@
 use crate::Message;
+use anyhow::Context;
 use futures_util::{stream::SplitSink, SinkExt};
 use openshift_ai_prompt_common::ws::{self, WSMessage};
 use tokio::net::TcpStream;
@@ -53,8 +54,8 @@ pub async fn start(
 ) -> Result<String, anyhow::Error> {
     ws_sender.send(ws::progress("Starting").as_msg()).await?;
 
-    let s3_settings = S3Settings::init_from_env()?;
-    let job_settings = JobSettings::init_from_env()?;
+    let s3_settings = S3Settings::init_from_env().context("S3 settings")?;
+    let job_settings = JobSettings::init_from_env().context("Job settings")?;
 
     let s: String = rand::thread_rng()
         .sample_iter(&Alphanumeric)
@@ -63,24 +64,34 @@ pub async fn start(
         .collect();
     let result_filename = format!("{s}.png");
 
-    let client = Client::try_default().await?;
+    let client = Client::try_default()
+        .await
+        .context("Failed to create k8s client")?;
     let jobs: Api<Job> = Api::default_namespaced(client);
     let job_json = create_job_for_prompt(
         prompt,
         job_settings.image,
         s3_settings.clone(),
         result_filename.clone(),
-    )?;
-    let data = jobs.create(&PostParams::default(), &job_json).await?;
+    )
+    .context("Job cannot be created")?;
+    let data = jobs
+        .create(&PostParams::default(), &job_json)
+        .await
+        .context("Job cannot be applied")?;
     let job_name = data.name_any();
     ws_sender
         .send(ws::progress(format!("Created job {job_name}").as_str()).as_msg())
-        .await?;
+        .await
+        .context("Failed to send progress message")?;
 
     let cond = await_condition(jobs.clone(), &job_name, conditions::is_job_completed());
-    let _ =
-        tokio::time::timeout(std::time::Duration::from_secs(job_settings.timeout), cond).await?;
-    jobs.delete(&job_name, &DeleteParams::background()).await?;
+    let _ = tokio::time::timeout(std::time::Duration::from_secs(job_settings.timeout), cond)
+        .await
+        .context("Failed to create a timeout")?;
+    jobs.delete(&job_name, &DeleteParams::background())
+        .await
+        .context("Failed to delete job")?;
 
     ws_sender
         .send(ws::progress("Job completed").as_msg())
