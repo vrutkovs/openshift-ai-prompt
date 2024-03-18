@@ -50,7 +50,7 @@ pub fn generate_image(
                     ws::WSMessageType::Error => error.emit(AttrValue::from(ws_message.to_string())),
                 },
                 Err(e) => {
-                    progress.emit((AttrValue::from(format!("{:?}", e)), 0.5));
+                    progress.emit((AttrValue::from(format!("{:?}", e)), 0.0));
                 }
             }
         }

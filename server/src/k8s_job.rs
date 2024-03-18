@@ -53,7 +53,7 @@ pub async fn start(
     ws_sender: &mut SplitSink<WebSocketStream<TcpStream>, Message>,
 ) -> Result<String, anyhow::Error> {
     ws_sender
-        .send(ws::progress("Starting", 0.1).as_msg())
+        .send(ws::progress("Request received", 0.1).as_msg())
         .await?;
 
     let s3_settings = S3Settings::init_from_env().context("S3 settings")?;

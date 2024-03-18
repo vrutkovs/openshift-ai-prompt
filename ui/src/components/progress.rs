@@ -22,8 +22,8 @@ impl Component for ProgressBar {
         let error = ctx.props().error;
         html! {
             <div class="w-full">
-                if percent > 0.0 && percent != 1.0 {
-                    <div class="bg-stroke bg-dark-3 relative h-4 w-full">
+                <div class="bg-stroke bg-dark-3 relative h-4 w-full">
+                    if !message.is_empty() {
                         if error {
                             <div class="bg-red-500 text-white font-bold rounded-t px-4 py-2 m-2" role="alert">
                                 <p class="text-sm">{message}</p>
@@ -33,11 +33,11 @@ impl Component for ProgressBar {
                                 <p class="text-sm">{message}</p>
                             </div>
                         }
-
+                    }
+                    if percent > 0.0 && percent != 1.0 {
                         <progress class="bg-primary m-2 left-0 top-0 flex h-full w-full items-center justify-center rounded-2xl text-black" value={percent.to_string()} max=1.0></progress>
-
-                    </div>
-                }
+                    }
+                </div>
             </div>
         }
     }
