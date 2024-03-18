@@ -372,6 +372,10 @@ class OVStableDiffusionPipeline(DiffusionPipeline):
 
 
 core = ov.Core()
+if DEVICE not in core.available_devices:
+    print(f'Requested device {DEVICE} not in found in {core.available_devices}')
+    sys.exit(1)
+
 text_enc = core.compile_model(TEXT_ENCODER_OV_PATH, DEVICE)
 unet_model = core.compile_model(UNET_OV_PATH, DEVICE)
 vae_decoder = core.compile_model(VAE_DECODER_OV_PATH, DEVICE, {})
