@@ -13,7 +13,11 @@ pub fn generate_image(
     result: Callback<AttrValue>,
 ) {
     progress.emit((AttrValue::from("Initializing"), 0.1));
-    let ws = WebSocket::open("ws://127.0.0.1:8081").unwrap();
+    let mut ws_address = "ws://127.0.0.1:8081";
+    if std::option_env!("PRODUCTION") == Some("true") {
+        ws_address = "ws://127.0.0.1:9090/ws"
+    }
+    let ws = WebSocket::open(ws_address).unwrap();
     let (mut write, mut read) = ws.split();
 
     spawn_local(async move {

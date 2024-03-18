@@ -9,6 +9,7 @@ RUN rustup target add wasm32-unknown-unknown \
 
 WORKDIR /src
 COPY . .
+ENV PRODUCTION true
 RUN cd ui/ && trunk build --release
 
 FROM quay.io/packit/nginx-unprivileged:1.23.4
