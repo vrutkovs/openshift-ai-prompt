@@ -1,0 +1,22 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: openshift-ai-prompt
+  namespace: ai-prompt
+  labels:
+    app: openshift-ai-prompt
+    app.kubernetes.io/component: openshift-ai-prompt
+    app.kubernetes.io/instance: openshift-ai-prompt
+    app.kubernetes.io/name: openshift-ai-prompt
+    app.kubernetes.io/part-of: openshift-ai-prompt-app
+spec:
+  to:
+    kind: Service
+    name: openshift-ai-prompt
+    weight: 100
+  port:
+    targetPort: 9090-tcp
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

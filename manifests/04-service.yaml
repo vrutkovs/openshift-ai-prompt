@@ -1,0 +1,21 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: openshift-ai-prompt
+  namespace: ai-prompt
+  labels:
+    app: openshift-ai-prompt
+    app.kubernetes.io/component: openshift-ai-prompt
+    app.kubernetes.io/instance: openshift-ai-prompt
+    app.kubernetes.io/name: openshift-ai-prompt
+    app.kubernetes.io/part-of: openshift-ai-prompt-app
+spec:
+  ports:
+    - name: 9090-tcp
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+  type: ClusterIP
+  selector:
+    app: openshift-ai-prompt
+    deployment: openshift-ai-prompt

@@ -1,0 +1,30 @@
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: openshift-ai-prompt
+  namespace: ai-prompt
+  labels:
+    app: openshift-ai-prompt
+    app.kubernetes.io/component: openshift-ai-prompt
+    app.kubernetes.io/instance: openshift-ai-prompt
+    app.kubernetes.io/name: openshift-ai-prompt
+    app.kubernetes.io/part-of: openshift-ai-prompt-app
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - name: ui
+      from:
+        kind: DockerImage
+        name: 'quay.io/vrutkovs/openshift-ai-prompt:ui'
+        type: Local
+    - name: server
+      from:
+        kind: DockerImage
+        name: 'quay.io/vrutkovs/openshift-ai-prompt:server'
+        type: Local
+    - name: openjourney
+      from:
+        kind: DockerImage
+        name: 'quay.io/vrutkovs/openshift-ai-prompt:openjourney'
+        type: Local
