@@ -93,7 +93,7 @@ pub async fn start(
     let cond = await_condition(jobs.clone(), &job_name, conditions::is_job_completed());
     let _ = tokio::time::timeout(std::time::Duration::from_secs(job_settings.timeout), cond)
         .await
-        .context("Failed to create a timeout")?;
+        .context("Timeout waiting for job to complete")?;
     jobs.delete(&job_name, &DeleteParams::background())
         .await
         .context("Failed to delete job")?;
