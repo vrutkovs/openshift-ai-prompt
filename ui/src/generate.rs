@@ -5,6 +5,7 @@ use yew::platform::spawn_local;
 use yew::prelude::*;
 
 use futures::{SinkExt, StreamExt};
+use gloo::console;
 use reqwasm::websocket::{futures::WebSocket, Message as reqwasm_Message};
 
 pub fn generate_image(
@@ -13,11 +14,21 @@ pub fn generate_image(
     result: Callback<AttrValue>,
 ) {
     progress.emit((AttrValue::from("Initializing"), 0.1));
-    let mut ws_address = "ws://127.0.0.1:8081";
-    if std::option_env!("PRODUCTION") == Some("true") {
-        ws_address = "ws://127.0.0.1:9090/ws"
-    }
-    let ws = WebSocket::open(ws_address).unwrap();
+
+    let window = web_sys::window().expect("Missing Window");
+    let host = window.location().host().expect("Missing href");
+    let ws_href = format!("wss://{}/ws", host);
+    console::log!(
+        "detected host '%s', ws address: '%s'",
+        host,
+        ws_href.clone()
+    );
+
+    let ws_address = match std::option_env!("PRODUCTION") {
+        Some("true") => ws_href.as_str(),
+        Some(&_) | None => "ws://127.0.0.1:8081",
+    };
+    let ws = WebSocket::open(ws_address).expect("WebSocket open");
     let (mut write, mut read) = ws.split();
 
     spawn_local(async move {
