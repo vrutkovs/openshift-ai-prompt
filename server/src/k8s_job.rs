@@ -148,7 +148,7 @@ pub fn create_job_for_prompt(
                         ],
                         "resources": {
                             "limits": {
-                                "nvidia.com/gpu": 1,
+                                "nvidia.com/gpu": "1",
                             }
                         }
                     }],
