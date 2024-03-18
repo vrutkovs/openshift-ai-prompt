@@ -183,5 +183,4 @@ if not VAE_DECODER_OV_PATH.exists():
 else:
     print(f"VAE decoder will be loaded from {VAE_DECODER_OV_PATH}")
 
-del vae
-gc.collect()
+print("Done")
