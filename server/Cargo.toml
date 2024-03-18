@@ -16,7 +16,7 @@ kube = { version = "0.88.1", features = ["runtime", "derive"] }
 k8s-openapi = { version = "0.21.0", features = ["latest"] }
 serde = "1.0"
 serde_json = "1.0"
-anyhow = "1.0.71"
+anyhow = { version = "1.0.71", features = ["backtrace"] }
 rand = "0.8.5"
 envconfig = "0.10.0"
 openshift-ai-prompt-common = {path="../common"}

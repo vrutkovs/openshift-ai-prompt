@@ -26,7 +26,7 @@ impl Component for ProgressBar {
                     if !message.is_empty() {
                         if error {
                             <div class="bg-red-500 text-white font-bold rounded-t px-4 py-2 m-2" role="alert">
-                                <p class="text-sm">{message}</p>
+                                <pre class="text-sm">{message}</pre>
                             </div>
                         } else {
                             <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">

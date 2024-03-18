@@ -66,7 +66,7 @@ pub fn result(url: String) -> WSMessage {
 pub fn error(error: Error) -> WSMessage {
     WSMessage {
         msgtype: WSMessageType::Error,
-        message: Some(error.to_string()),
+        message: Some(format!("{:?}", error)),
         ..Default::default()
     }
 }

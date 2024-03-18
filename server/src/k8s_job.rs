@@ -25,7 +25,10 @@ impl AsTungstenite for WSMessage {
     fn as_msg(&self) -> tungstenite_Message {
         match serde_json::to_string(&self) {
             Ok(j) => tungstenite_Message::Text(j.to_owned()),
-            Err(e) => tungstenite_Message::Text(e.to_string()),
+            Err(e) => {
+                let backtrace = std::backtrace::Backtrace::capture();
+                tungstenite_Message::Text(format!("{e}: {:#?}", backtrace))
+            }
         }
     }
 }
