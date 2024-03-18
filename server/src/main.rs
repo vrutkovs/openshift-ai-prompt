@@ -55,7 +55,7 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
 async fn main() {
     env_logger::init();
 
-    let addr = "0.0.0.0:9002";
+    let addr = "0.0.0.0:8080";
     let listener = TcpListener::bind(&addr).await.expect("Can't listen");
     info!("Listening on: {}", addr);
 
