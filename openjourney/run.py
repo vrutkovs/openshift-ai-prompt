@@ -1,3 +1,4 @@
+import tempfile
 import inspect
 from typing import List, Optional, Union, Dict
 
@@ -18,10 +19,18 @@ UNET_OV_PATH = Path('/app/unet.xml')
 VAE_DECODER_OV_PATH = Path('/app/vae_decoder.xml')
 VAE_ENCODER_OV_PATH = Path("/app/vae_encoder.xml")
 
-DEVICE='CPU'
-STEPS=20
-PROMPT='A person in red fedora, in style of picasso'
+import os
+import sys
+DEVICE=os.environ.get("OPENJOURNEY_DEVICE", "CPU")
+STEPS=os.environ.get("OPENJOURNEY_STEPS", 20)
+PROMPT=os.environ.get("PROMPT", 'A person in red fedora, in style of picasso')
+RESULT_FILENAME=os.environ.get("RESULT_FILENAME", 'foobar.png')
 
+print(f"Generating picture for '{PROMPT}' using {STEPS} steps")
+
+AWS_ACCESS_KEY=os.environ.get("AWS_ACCESS_KEY")
+AWS_ACCESS_SECRET=os.environ.get("AWS_ACCESS_SECRET")
+S3_BUCKET_NAME=os.environ.get("S3_BUCKET_NAME")
 
 def scale_fit_to_window(dst_width:int, dst_height:int, image_width:int, image_height:int):
     """
@@ -388,8 +397,31 @@ ov_pipe = OVStableDiffusionPipeline(
 )
 result = ov_pipe(PROMPT, num_inference_steps=STEPS)
 final_image = result['sample'][0]
-if result['iterations']:
-    all_frames = result['iterations']
-    img = next(iter(all_frames))
-    img.save(fp='result.gif', format='GIF', append_images=iter(all_frames), save_all=True, duration=len(all_frames) * 5, loop=0)
-final_image.save('result.png')
+
+_, file_extension = os.path.splitext(RESULT_FILENAME)
+temp = tempfile.NamedTemporaryFile(suffix=file_extension)
+print(f"Saving picture to {temp.name}")
+final_image.save(temp.name)
+
+if not AWS_ACCESS_KEY or not AWS_ACCESS_SECRET or not S3_BUCKET_NAME:
+    sys.exit(0)
+
+S3_LOCATION = 'http://{}.s3.amazonaws.com'.format(S3_BUCKET_NAME)
+print(f"Uploading {temp.name} to {S3_LOCATION}")
+import boto3, botocore
+
+s3 = boto3.client(
+   "s3",
+   aws_access_key_id=AWS_ACCESS_KEY,
+   aws_secret_access_key=AWS_ACCESS_SECRET
+)
+s3.upload_fileobj(
+    temp,
+    S3_BUCKET_NAME,
+    RESULT_FILENAME,
+    ExtraArgs={
+        "ACL": "public-read",
+        "ContentType": "image/png",
+    }
+)
+print(f"Uploaded to {S3_LOCATION}/{RESULT_FILENAME}")
