@@ -11,5 +11,5 @@ RUN RUST_BACKTRACE=full cargo build --bin openshift-ai-prompt-server --release
 
 FROM registry.access.redhat.com/ubi9/ubi:latest
 COPY --from=rust_builder /opt/app-root/src/target/release/openshift-ai-prompt-server /usr/bin/openshift-ai-prompt-server
-EXPOSE 8080
+EXPOSE 8081
 ENTRYPOINT ["/usr/bin/openshift-ai-prompt-server"]

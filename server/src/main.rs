@@ -8,9 +8,9 @@ use tokio_tungstenite::{
     tungstenite::{Error, Message, Result},
 };
 
-use openshift_ai_prompt_common::ws::{self, AsWS};
-
+use openshift_ai_prompt_common::ws;
 mod k8s_job;
+use crate::k8s_job::AsTungstenite;
 
 async fn accept_connection(peer: SocketAddr, stream: TcpStream) {
     if let Err(e) = handle_connection(peer, stream).await {
@@ -35,8 +35,8 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
                         let msg = msg?;
                         if msg.is_text() {
                             match k8s_job::start(msg.to_string(), &mut ws_sender).await {
-                                Err(e) => ws_sender.send(ws::error(e).as_ws()).await?,
-                                Ok(url) => ws_sender.send(ws::result(url).as_ws()).await?,
+                                Err(e) => ws_sender.send(ws::error(e).as_msg()).await?,
+                                Ok(url) => ws_sender.send(ws::result(url).as_msg()).await?,
                             };
                         } else if msg.is_close() || msg.is_binary() {
                             break;
@@ -55,7 +55,7 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
 async fn main() {
     env_logger::init();
 
-    let addr = "0.0.0.0:8080";
+    let addr = "0.0.0.0:8081";
     let listener = TcpListener::bind(&addr).await.expect("Can't listen");
     info!("Listening on: {}", addr);
 

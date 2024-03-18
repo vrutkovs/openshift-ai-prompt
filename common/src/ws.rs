@@ -1,8 +1,9 @@
 use anyhow::Error;
-use serde::Serialize;
-use tokio_tungstenite::tungstenite::Message;
+use reqwasm::websocket::{Message as reqwasm_Message, WebSocketError};
+use serde::{Deserialize, Serialize};
+use std::fmt;
 
-#[derive(Default, Serialize)]
+#[derive(Default, Deserialize, Serialize)]
 pub enum WSMessageType {
     #[default]
     Progress,
@@ -10,22 +11,31 @@ pub enum WSMessageType {
     Error,
 }
 
-#[derive(Default, Serialize)]
+#[derive(Default, Deserialize, Serialize)]
 pub struct WSMessage {
     #[serde(rename(serialize = "type", deserialize = "type"))]
-    msgtype: WSMessageType,
-    message: Option<String>,
+    pub msgtype: WSMessageType,
+    pub message: Option<String>,
 }
 
-pub trait AsWS {
-    fn as_ws(&self) -> Message;
+impl fmt::Display for WSMessage {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.message.clone().unwrap_or("".to_string()))
+    }
 }
 
-impl AsWS for WSMessage {
-    fn as_ws(&self) -> Message {
-        match serde_json::to_string(&self) {
-            Ok(j) => Message::Text(j.to_owned()),
-            Err(e) => Message::Text(e.to_string()),
+pub trait AsWSMessage {
+    fn as_msg(&self) -> Result<WSMessage, Error>;
+}
+
+impl AsWSMessage for Result<reqwasm_Message, WebSocketError> {
+    fn as_msg(&self) -> Result<WSMessage, Error> {
+        match &self {
+            Ok(msg) => match msg {
+                reqwasm_Message::Bytes(_) => anyhow::bail!("bytes are not supported"),
+                reqwasm_Message::Text(text) => Ok(serde_json::from_str(text)?),
+            },
+            Err(e) => anyhow::bail!(format!("{:?}", e)),
         }
     }
 }

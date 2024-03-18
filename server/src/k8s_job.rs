@@ -1,6 +1,6 @@
 use crate::Message;
 use futures_util::{stream::SplitSink, SinkExt};
-use openshift_ai_prompt_common::ws::{self, AsWS};
+use openshift_ai_prompt_common::ws::{self, WSMessage};
 use tokio::net::TcpStream;
 use tokio_tungstenite::WebSocketStream;
 
@@ -13,6 +13,21 @@ use kube::{
 
 use envconfig::Envconfig;
 use rand::{distributions::Alphanumeric, Rng};
+
+use tokio_tungstenite::tungstenite::Message as tungstenite_Message;
+
+pub trait AsTungstenite {
+    fn as_msg(&self) -> tungstenite_Message;
+}
+
+impl AsTungstenite for WSMessage {
+    fn as_msg(&self) -> tungstenite_Message {
+        match serde_json::to_string(&self) {
+            Ok(j) => tungstenite_Message::Text(j.to_owned()),
+            Err(e) => tungstenite_Message::Text(e.to_string()),
+        }
+    }
+}
 
 #[derive(Clone, Envconfig)]
 pub struct JobSettings {
@@ -36,7 +51,7 @@ pub async fn start(
     prompt: String,
     ws_sender: &mut SplitSink<WebSocketStream<TcpStream>, Message>,
 ) -> Result<String, anyhow::Error> {
-    ws_sender.send(ws::progress("Starting").as_ws()).await?;
+    ws_sender.send(ws::progress("Starting").as_msg()).await?;
 
     let s3_settings = S3Settings::init_from_env()?;
     let job_settings = JobSettings::init_from_env()?;
@@ -59,7 +74,7 @@ pub async fn start(
     let data = jobs.create(&PostParams::default(), &job_json).await?;
     let job_name = data.name_any();
     ws_sender
-        .send(ws::progress(format!("Created job {job_name}").as_str()).as_ws())
+        .send(ws::progress(format!("Created job {job_name}").as_str()).as_msg())
         .await?;
 
     let cond = await_condition(jobs.clone(), &job_name, conditions::is_job_completed());
@@ -68,7 +83,7 @@ pub async fn start(
     jobs.delete(&job_name, &DeleteParams::background()).await?;
 
     ws_sender
-        .send(ws::progress("Job completed").as_ws())
+        .send(ws::progress("Job completed").as_msg())
         .await?;
     let bucket = s3_settings.s3_bucket;
     Ok(format!(
