@@ -28,7 +28,7 @@ spec:
         - name: ui
           image: ' '
           ports:
-            - containerPort: 9090
+            - containerPort: 8080
               protocol: TCP
           resources: {}
           terminationMessagePath: /dev/termination-log

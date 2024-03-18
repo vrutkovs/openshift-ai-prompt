@@ -11,10 +11,10 @@ metadata:
     app.kubernetes.io/part-of: openshift-ai-prompt-app
 spec:
   ports:
-    - name: 9090-tcp
+    - name: 8080-tcp
       protocol: TCP
-      port: 9090
-      targetPort: 9090
+      port: 8080
+      targetPort: 8080
   type: ClusterIP
   selector:
     app: openshift-ai-prompt
