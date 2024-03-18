@@ -40,7 +40,9 @@ pub fn generate_image(
             match msg.as_msg() {
                 Ok(ws_message) => match ws_message.msgtype {
                     ws::WSMessageType::Progress => {
-                        progress.emit((AttrValue::from(ws_message.to_string()), 0.5))
+                        let text = AttrValue::from(ws_message.to_string());
+                        let percent = ws_message.get_progress().unwrap_or(0.3);
+                        progress.emit((text, percent))
                     }
                     ws::WSMessageType::Result => {
                         result.emit(AttrValue::from(ws_message.to_string()))

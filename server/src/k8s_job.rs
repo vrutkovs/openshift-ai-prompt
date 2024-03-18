@@ -52,7 +52,9 @@ pub async fn start(
     prompt: String,
     ws_sender: &mut SplitSink<WebSocketStream<TcpStream>, Message>,
 ) -> Result<String, anyhow::Error> {
-    ws_sender.send(ws::progress("Starting").as_msg()).await?;
+    ws_sender
+        .send(ws::progress("Starting", 0.1).as_msg())
+        .await?;
 
     let s3_settings = S3Settings::init_from_env().context("S3 settings")?;
     let job_settings = JobSettings::init_from_env().context("Job settings")?;
@@ -81,7 +83,7 @@ pub async fn start(
         .context("Job cannot be applied")?;
     let job_name = data.name_any();
     ws_sender
-        .send(ws::progress(format!("Created job {job_name}").as_str()).as_msg())
+        .send(ws::progress(format!("Created job {job_name}").as_str(), 0.5).as_msg())
         .await
         .context("Failed to send progress message")?;
 
@@ -94,7 +96,7 @@ pub async fn start(
         .context("Failed to delete job")?;
 
     ws_sender
-        .send(ws::progress("Job completed").as_msg())
+        .send(ws::progress("Job completed", 0.9).as_msg())
         .await?;
     let bucket = s3_settings.s3_bucket;
     Ok(format!(

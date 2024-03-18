@@ -16,11 +16,18 @@ pub struct WSMessage {
     #[serde(rename(serialize = "type", deserialize = "type"))]
     pub msgtype: WSMessageType,
     pub message: Option<String>,
+    pub percentage: Option<f32>,
 }
 
 impl fmt::Display for WSMessage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.message.clone().unwrap_or("".to_string()))
+    }
+}
+
+impl WSMessage {
+    pub fn get_progress(&self) -> Option<f32> {
+        self.percentage
     }
 }
 
@@ -40,10 +47,11 @@ impl AsWSMessage for Result<reqwasm_Message, WebSocketError> {
     }
 }
 
-pub fn progress(status: &str) -> WSMessage {
+pub fn progress(status: &str, percentage: f32) -> WSMessage {
     WSMessage {
         msgtype: WSMessageType::Progress,
         message: Some(status.to_string()),
+        percentage: Some(percentage),
     }
 }
 
@@ -51,6 +59,7 @@ pub fn result(url: String) -> WSMessage {
     WSMessage {
         msgtype: WSMessageType::Result,
         message: Some(url),
+        ..Default::default()
     }
 }
 
@@ -58,5 +67,6 @@ pub fn error(error: Error) -> WSMessage {
     WSMessage {
         msgtype: WSMessageType::Error,
         message: Some(error.to_string()),
+        ..Default::default()
     }
 }
