@@ -163,10 +163,22 @@ pub fn create_job_for_prompt(
                                 "value": "50",
                             }
                         ],
+                        "imagePullPolicy": "Always",
                         "resources": {
                             "limits": {
                                 "nvidia.com/gpu": "1",
                             }
+                        },
+                        "volumeMounts": [{
+                            "name": "model",
+                            "mountPath": "/opt/app-root/src/model",
+                            "subPath": "model",
+                        }]
+                    }],
+                    "volumes": [{
+                        "name": "model",
+                        "persistentVolumeClaim": {
+                            "claimName": "model",
                         }
                     }],
                     "restartPolicy": "Never",
