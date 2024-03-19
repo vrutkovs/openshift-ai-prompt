@@ -19,7 +19,7 @@ from pathlib import Path
 import torch
 import openvino as ov
 
-TEXT_ENCODER_OV_PATH = Path("/app/text_encoder.xml")
+TEXT_ENCODER_OV_PATH = Path("/opt/app-root/src/text_encoder.xml")
 
 def cleanup_torchscript_cache():
     """
@@ -62,7 +62,7 @@ gc.collect()
 
 import numpy as np
 
-UNET_OV_PATH = Path('/app/unet.xml')
+UNET_OV_PATH = Path('/opt/app-root/src/unet.xml')
 
 dtype_mapping = {
     torch.float32: ov.Type.f32,
@@ -109,7 +109,7 @@ else:
 del unet
 gc.collect()
 
-VAE_ENCODER_OV_PATH = Path("/app/vae_encoder.xml")
+VAE_ENCODER_OV_PATH = Path("/opt/app-root/src/vae_encoder.xml")
 
 def convert_vae_encoder(vae: torch.nn.Module, ir_path: Path):
     """
@@ -145,7 +145,7 @@ if not VAE_ENCODER_OV_PATH.exists():
 else:
     print(f"VAE encoder will be loaded from {VAE_ENCODER_OV_PATH}")
 
-VAE_DECODER_OV_PATH = Path('/app/vae_decoder.xml')
+VAE_DECODER_OV_PATH = Path('/opt/app-root/src/vae_decoder.xml')
 
 def convert_vae_decoder(vae: torch.nn.Module, ir_path: Path):
     """

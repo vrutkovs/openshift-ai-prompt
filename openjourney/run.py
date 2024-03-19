@@ -14,10 +14,10 @@ from diffusers.schedulers import DDIMScheduler, LMSDiscreteScheduler, PNDMSchedu
 from openvino.runtime import Model
 
 from pathlib import Path
-TEXT_ENCODER_OV_PATH = Path("/app/text_encoder.xml")
-UNET_OV_PATH = Path('/app/unet.xml')
-VAE_DECODER_OV_PATH = Path('/app/vae_decoder.xml')
-VAE_ENCODER_OV_PATH = Path("/app/vae_encoder.xml")
+TEXT_ENCODER_OV_PATH = Path("/opt/app-root/src/text_encoder.xml")
+UNET_OV_PATH = Path('/opt/app-root/src/unet.xml')
+VAE_DECODER_OV_PATH = Path('/opt/app-root/src/vae_decoder.xml')
+VAE_ENCODER_OV_PATH = Path("/opt/app-root/src/vae_encoder.xml")
 
 import os
 import sys
