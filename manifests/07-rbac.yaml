@@ -8,9 +8,7 @@ rules:
   - verbs:
       - create
       - delete
-      - deletecollection
-      - patch
-      - update
+      - list
       - get
       - watch
     apiGroups:
