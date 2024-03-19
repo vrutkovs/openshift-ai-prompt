@@ -1,3 +1,5 @@
+import os
+import sys
 DEVICE=os.environ.get("OPENJOURNEY_DEVICE", "cuda")
 STEPS=os.environ.get("OPENJOURNEY_STEPS", 20)
 PROMPT=os.environ.get("PROMPT", 'A person in red fedora, in style of picasso')
