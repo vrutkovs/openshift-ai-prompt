@@ -144,6 +144,12 @@ pub fn create_job_for_prompt(
                             }, {
                                 "name": "S3_BUCKET_NAME",
                                 "value": s3_settings.s3_bucket,
+                            }, {
+                                "name": "OPENJOURNEY_DEVICE",
+                                "value": "cuda",
+                            }, {
+                                "name": "OPENJOURNEY_STEPS",
+                                "value": "50",
                             }
                         ],
                         "resources": {
