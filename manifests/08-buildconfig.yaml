@@ -16,7 +16,6 @@ spec:
     type: Docker
     dockerStrategy:
       dockerfilePath: Dockerfile.openjourney
-      imageOptimizationPolicy: SkipLayers
   postCommit: {}
   source:
     type: Git

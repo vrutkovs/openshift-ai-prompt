@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: model
+  namespace: ai-prompt
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 100Gi
+---
+kind: Job
+apiVersion: batch/v1
+metadata:
+  generateName: picture-
+  name: model-init
+  namespace: ai-prompt
+spec:
+  parallelism: 1
+  completions: 1
+  template:
+    metadata:
+      generateName: model-init-
+    spec:
+      volumes:
+        - name: model
+          persistentVolumeClaim:
+            claimName: model
+      containers:
+        - name: model-init
+          image: >-
+            quay.io:443/vrutkovs/openshift-ai-prompt:git-lfs
+          command:
+          - /bin/git
+          - clone
+          - https://huggingface.co/runwayml/stable-diffusion-v1-5
+          - /mnt/model
+          volumeMounts:
+          - name: model
+            mountPath: /mnt
+      restartPolicy: OnFailure
