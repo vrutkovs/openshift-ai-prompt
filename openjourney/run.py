@@ -1,4 +1,6 @@
-DEVICE=os.environ.get("OPENJOURNEY_DEVICE", "cuda")
+import os
+import sys
+DEVICE=os.environ.get("OPENJOURNEY_DEVICE", "CPU")
 STEPS=os.environ.get("OPENJOURNEY_STEPS", 20)
 PROMPT=os.environ.get("PROMPT", 'A person in red fedora, in style of picasso')
 RESULT_FILENAME=os.environ.get("RESULT_FILENAME", 'foobar.png')
@@ -13,17 +15,15 @@ from diffusers import AutoPipelineForText2Image
 from diffusers import DPMSolverMultistepScheduler
 import torch
 
-pipeline = DiffusionPipeline.from_pretrained('./model', use_safetensors=True)
-pipeline = pipeline.to(DEVICE)
-pipeline.scheduler = DPMSolverMultistepScheduler.from_config(pipeline.scheduler.config)
-generator = torch.Generator(DEVICE).manual_seed(0)
-
 pipeline = AutoPipelineForText2Image.from_pretrained(
-	'./model', torch_dtype=torch.float16, variant="fp16"
+	'./model',
+    torch_dtype=torch.float16, variant="fp16",
+    use_safetensors=True,
 ).to(DEVICE)
 generator = torch.Generator(DEVICE).manual_seed(-1)
 final_image = pipeline(PROMPT, generator=generator).images[0]
 
+import tempfile
 _, file_extension = os.path.splitext(RESULT_FILENAME)
 temp = tempfile.NamedTemporaryFile(suffix=file_extension)
 print(f"Saving picture to {temp.name}")
