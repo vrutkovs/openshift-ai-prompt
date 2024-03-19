@@ -1,0 +1,4 @@
+FROM registry.access.redhat.com/ubi9/ubi:latest as builder
+RUN dnf install -y git-lfs && \
+    git-lfs install && \
+    dnf clean all
