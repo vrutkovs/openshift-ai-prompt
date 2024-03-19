@@ -20,7 +20,10 @@ pipeline = AutoPipelineForText2Image.from_pretrained(
     torch_dtype=torch.float16, variant="fp16",
     use_safetensors=True,
 ).to(DEVICE)
-generator = torch.Generator(DEVICE).manual_seed(-1)
+
+import random
+rand = random.seed(0)
+generator = torch.Generator(DEVICE).manual_seed(rand)
 final_image = pipeline(PROMPT, generator=generator).images[0]
 
 import tempfile
