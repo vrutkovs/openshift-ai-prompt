@@ -34,7 +34,8 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
                     Some(msg) => {
                         let msg = msg?;
                         if msg.is_text() {
-                            match k8s_job::start(msg.to_string(), &mut ws_sender).await {
+                            let res = k8s_job::start(peer.to_string(), msg.to_string(), &mut ws_sender).await;
+                            match res {
                                 Err(e) => ws_sender.send(ws::error(e).as_msg()).await?,
                                 Ok(url) => ws_sender.send(ws::result(url).as_msg()).await?,
                             };
@@ -63,7 +64,6 @@ async fn main() {
         let peer = stream
             .peer_addr()
             .expect("connected streams should have a peer address");
-        info!("Peer address: {}", peer);
 
         tokio::spawn(accept_connection(peer, stream));
     }

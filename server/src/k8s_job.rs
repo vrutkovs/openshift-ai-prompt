@@ -1,4 +1,6 @@
 use crate::Message;
+use log::*;
+
 use anyhow::Context;
 use futures_util::{stream::SplitSink, SinkExt};
 use openshift_ai_prompt_common::ws::{self, WSMessage};
@@ -52,6 +54,7 @@ pub struct S3Settings {
 }
 
 pub async fn start(
+    peer: String,
     prompt: String,
     ws_sender: &mut SplitSink<WebSocketStream<TcpStream>, Message>,
 ) -> Result<String, anyhow::Error> {
@@ -69,6 +72,11 @@ pub async fn start(
         .collect();
     let result_filename = format!("{s}.png");
 
+    info!(
+        "Peer {}: generating '{}' and saving to {}",
+        peer, prompt, result_filename
+    );
+
     let client = Client::try_default()
         .await
         .context("Failed to create k8s client")?;
@@ -84,6 +92,8 @@ pub async fn start(
         .create(&PostParams::default(), &job_json)
         .await
         .context("Job cannot be applied")?;
+    info!("Peer {}: created job '{}'", peer, data.name_any());
+
     let job_name = data.name_any();
     ws_sender
         .send(ws::progress(format!("Created job {job_name}").as_str(), 0.5).as_msg())
@@ -97,10 +107,11 @@ pub async fn start(
     jobs.delete(&job_name, &DeleteParams::background())
         .await
         .context("Failed to delete job")?;
-
     ws_sender
         .send(ws::progress("Job completed", 0.9).as_msg())
         .await?;
+    info!("Peer {}: job {} completed", peer, data.name_any());
+
     let bucket = s3_settings.s3_bucket;
     Ok(format!(
         "https://{bucket}.s3.amazonaws.com/{result_filename}"
