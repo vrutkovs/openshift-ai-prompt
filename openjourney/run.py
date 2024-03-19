@@ -24,7 +24,11 @@ pipeline = AutoPipelineForText2Image.from_pretrained(
 import random
 rand = random.randrange(100000)
 generator = torch.Generator(DEVICE).manual_seed(rand)
-final_image = pipeline(PROMPT, generator=generator).images[0]
+final_image = pipeline(
+    PROMPT,
+    negative_prompt="ugly, deformed, disfigured, poor details, bad anatomy",
+    generator=generator
+).images[0]
 
 import tempfile
 _, file_extension = os.path.splitext(RESULT_FILENAME)
