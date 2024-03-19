@@ -43,7 +43,7 @@ impl Component for App {
                 let on_progress = ctx.link().callback(Msg::Progress);
                 let on_error = ctx.link().callback(Msg::Error);
                 let on_result = ctx.link().callback(Msg::Result);
-                generate::generate_image(on_progress, on_error, on_result);
+                generate::generate_image(prompt.to_string(), on_progress, on_error, on_result);
                 true
             }
             Msg::Progress((status, progress)) => {

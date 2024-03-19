@@ -9,6 +9,7 @@ use gloo::console;
 use reqwasm::websocket::{futures::WebSocket, Message as reqwasm_Message};
 
 pub fn generate_image(
+    prompt: String,
     progress: Callback<(AttrValue, f32)>,
     error: Callback<AttrValue>,
     result: Callback<AttrValue>,
@@ -32,10 +33,7 @@ pub fn generate_image(
     let (mut write, mut read) = ws.split();
 
     spawn_local(async move {
-        write
-            .send(reqwasm_Message::Text("start".to_string()))
-            .await
-            .unwrap();
+        write.send(reqwasm_Message::Text(prompt)).await.unwrap();
         while let Some(msg) = read.next().await {
             match msg.as_msg() {
                 Ok(ws_message) => match ws_message.msgtype {
