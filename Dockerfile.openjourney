@@ -1,5 +1,11 @@
+FROM registry.access.redhat.com/ubi9/ubi:latest as builder
+RUN dnf install -y git-lfs && \
+    git-lfs install && \
+    git clone https://huggingface.co/runwayml/stable-diffusion-v1-5 /model && \
+    rm -rf /model/.git
+
 FROM quay.io/opendatahub-contrib/workbench-images:cuda-runtime-pytorch-c9s-py311_2023c_latest
-RUN git-lfs install && git clone https://huggingface.co/runwayml/stable-diffusion-v1-5 /opt/app-root/src/model
+COPY --from=builder /model /opt/app-root/src/model
 COPY ./openjourney .
 RUN pip3 install -r requirements.txt
 ENTRYPOINT ["python3", "run.py"]
