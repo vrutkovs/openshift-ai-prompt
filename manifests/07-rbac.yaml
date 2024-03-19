@@ -1,0 +1,35 @@
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: job-admin
+  namespace: ai-prompt
+rules:
+  - verbs:
+      - create
+      - delete
+      - deletecollection
+      - patch
+      - update
+      - get
+      - watch
+    apiGroups:
+      - batch
+    resources:
+      - cronjobs
+      - jobs
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: default-as-job-admin
+  namespace: ai-prompt
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: ai-prompt
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: job-admin
+  namespace: ai-prompt
