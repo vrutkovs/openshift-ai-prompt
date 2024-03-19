@@ -180,6 +180,7 @@ pub fn create_job_for_prompt(
                             "name": "model",
                             "mountPath": "/opt/app-root/src/model",
                             "subPath": "model",
+                            "readOnly": "true",
                         }]
                     }],
                     "volumes": [{
