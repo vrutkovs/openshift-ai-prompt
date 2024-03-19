@@ -145,7 +145,7 @@ pub fn create_job_for_prompt(
                 "spec": {
                     "containers": [{
                         "name": "generate",
-                        "image": format!("openshift-ai-prompt:{}", job_settings.image),
+                        "image": job_settings.image,
                         "env": [
                             {
                                 "name": "PROMPT",
@@ -167,7 +167,7 @@ pub fn create_job_for_prompt(
                                 "value": job_settings.device,
                             }, {
                                 "name": "OPENJOURNEY_STEPS",
-                                "value": job_settings.steps,
+                                "value": job_settings.steps.to_string(),
                             }
                         ],
                         "imagePullPolicy": "Always",
