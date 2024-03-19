@@ -39,6 +39,10 @@ impl AsTungstenite for WSMessage {
 pub struct JobSettings {
     #[envconfig(from = "GENERATE_IMAGE")]
     pub image: String,
+    #[envconfig(from = "GENERATE_DEVICE")]
+    pub device: String,
+    #[envconfig(from = "GENERATE_STEPS")]
+    pub steps: u64,
     #[envconfig(from = "GENERATE_TIMEOUT")]
     pub timeout: u64,
 }
@@ -83,7 +87,7 @@ pub async fn start(
     let jobs: Api<Job> = Api::default_namespaced(client);
     let job_json = create_job_for_prompt(
         prompt,
-        job_settings.image,
+        job_settings.clone(),
         s3_settings.clone(),
         result_filename.clone(),
     )
@@ -120,7 +124,7 @@ pub async fn start(
 
 pub fn create_job_for_prompt(
     prompt: String,
-    image: String,
+    job_settings: JobSettings,
     s3_settings: S3Settings,
     result_filename: String,
 ) -> Result<Job, serde_json::Error> {
@@ -134,11 +138,14 @@ pub fn create_job_for_prompt(
             "template": {
                 "metadata": {
                     "generateName": "picture-",
+                    "annotations": {
+                        "alpha.image.policy.openshift.io/resolve-names": "'*'",
+                    }
                 },
                 "spec": {
                     "containers": [{
                         "name": "generate",
-                        "image": image,
+                        "image": format!("openshift-ai-prompt:{}", job_settings.image),
                         "env": [
                             {
                                 "name": "PROMPT",
@@ -157,10 +164,10 @@ pub fn create_job_for_prompt(
                                 "value": s3_settings.s3_bucket,
                             }, {
                                 "name": "OPENJOURNEY_DEVICE",
-                                "value": "cuda",
+                                "value": job_settings.device,
                             }, {
                                 "name": "OPENJOURNEY_STEPS",
-                                "value": "50",
+                                "value": job_settings.steps,
                             }
                         ],
                         "imagePullPolicy": "Always",
