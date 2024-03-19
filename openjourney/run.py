@@ -22,7 +22,7 @@ pipeline = AutoPipelineForText2Image.from_pretrained(
 ).to(DEVICE)
 
 import random
-rand = random.seed(0)
+rand = random.randrange(100000)
 generator = torch.Generator(DEVICE).manual_seed(rand)
 final_image = pipeline(PROMPT, generator=generator).images[0]
 
