@@ -30,14 +30,99 @@ spec:
           persistentVolumeClaim:
             claimName: model
       containers:
-        - name: model-init
+        - name: impressionism
           image: >-
             quay.io:443/vrutkovs/openshift-ai-prompt:git-lfs
           command:
           - /bin/git
           - clone
-          - https://huggingface.co/runwayml/stable-diffusion-v1-5
+          - -v
+          - https://hf.co/taki0112/lora-trained-xl_abstract-impressionism_split
           - /mnt/model
+          volumeMounts:
+          - name: model
+            mountPath: /mnt
+        - name: pixel-art-xl
+          image: >-
+            quay.io:443/vrutkovs/openshift-ai-prompt:git-lfs
+          command:
+          - /bin/git
+          - clone
+          - -v
+          - https://hf.co/nerijs/pixel-art-xl
+          - /mnt/pixel-art
+          volumeMounts:
+          - name: model
+            mountPath: /mnt
+        - name: ikea
+          image: >-
+            quay.io:443/vrutkovs/openshift-ai-prompt:git-lfs
+          command:
+          - /bin/git
+          - clone
+          - -v
+          - https://hf.co/ostris/ikea-instructions-lora-sdxl
+          - /mnt/ikea
+          volumeMounts:
+          - name: model
+            mountPath: /mnt
+        - name: lego
+          image: >-
+            quay.io:443/vrutkovs/openshift-ai-prompt:git-lfs
+          command:
+          - /bin/git
+          - clone
+          - -v
+          - https://hf.co/nerijs/lego-minifig-xl
+          - /mnt/lego
+          volumeMounts:
+          - name: model
+            mountPath: /mnt
+        - name: stickers
+          image: >-
+            quay.io:443/vrutkovs/openshift-ai-prompt:git-lfs
+          command:
+          - /bin/git
+          - clone
+          - -v
+          - https://hf.co/artificialguybr/StickersRedmond
+          - /mnt/stickers
+          volumeMounts:
+          - name: model
+            mountPath: /mnt
+        - name: xlbase
+          image: >-
+            quay.io:443/vrutkovs/openshift-ai-prompt:git-lfs
+          command:
+          - /bin/git
+          - clone
+          - -v
+          - https://hf.co/stabilityai/stable-diffusion-xl-base-1.0
+          - /mnt/xlbase
+          volumeMounts:
+          - name: model
+            mountPath: /mnt
+        - name: tintin
+          image: >-
+            quay.io:443/vrutkovs/openshift-ai-prompt:git-lfs
+          command:
+          - /bin/git
+          - clone
+          - -v
+          - https://hf.co/sd-dreambooth-library/herge-style
+          - /mnt/tintin
+          volumeMounts:
+          - name: model
+            mountPath: /mnt
+        - name: simpsons
+          image: >-
+            quay.io:443/vrutkovs/openshift-ai-prompt:git-lfs
+          command:
+          - /bin/git
+          - clone
+          - -v
+          - https://hf.co/Norod78/sd2-simpsons-blip
+          - /mnt/simpsons
           volumeMounts:
           - name: model
             mountPath: /mnt
