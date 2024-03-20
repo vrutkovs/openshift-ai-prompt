@@ -1,3 +1,4 @@
+use crate::models;
 use anyhow::Error;
 use reqwasm::websocket::{Message as reqwasm_Message, WebSocketError};
 use serde::{Deserialize, Serialize};
@@ -17,7 +18,7 @@ pub struct WSMessage {
     #[serde(rename(serialize = "type", deserialize = "type"))]
     pub msgtype: WSMessageType,
     pub message: Option<String>,
-    pub model: Option<String>,
+    pub model: Option<models::Model>,
     pub percentage: Option<f32>,
 }
 
@@ -66,7 +67,7 @@ pub fn prompt(prompt: String) -> Result<reqwasm_Message, Error> {
     WSMessage {
         msgtype: WSMessageType::Prompt,
         message: Some(prompt.to_string()),
-        model: Some(String::from("model")),
+        model: Some(models::Model::Simpsons),
         ..Default::default()
     }
     .as_msg()

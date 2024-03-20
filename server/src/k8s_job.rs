@@ -1,4 +1,4 @@
-use crate::Message;
+use crate::{models, Message};
 use log::*;
 
 use anyhow::{Context, Error};
@@ -73,7 +73,7 @@ pub struct S3Settings {
 pub async fn start(
     peer: String,
     prompt: String,
-    model: String,
+    model: models::Model,
     ws_sender: &mut SplitSink<WebSocketStream<TcpStream>, Message>,
 ) -> Result<String, anyhow::Error> {
     ws_sender
@@ -139,11 +139,12 @@ pub async fn start(
 
 pub fn create_job_for_prompt(
     prompt: String,
-    model: String,
+    model: models::Model,
     job_settings: JobSettings,
     s3_settings: S3Settings,
     result_filename: String,
 ) -> Result<Job, serde_json::Error> {
+    let base_model = model.get_basemodel().unwrap_or(model);
     serde_json::from_value(serde_json::json!({
         "apiVersion": "batch/v1",
         "kind": "Job",
@@ -195,7 +196,7 @@ pub fn create_job_for_prompt(
                         "volumeMounts": [{
                             "name": "model",
                             "mountPath": "/opt/app-root/src/model",
-                            "subPath": model,
+                            "subPath": base_model.get_subpath(),
                         }]
                     }],
                     "volumes": [{

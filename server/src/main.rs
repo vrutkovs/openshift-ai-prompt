@@ -8,6 +8,7 @@ use tokio_tungstenite::{
     tungstenite::{Error, Message, Result},
 };
 
+use openshift_ai_prompt_common::models;
 use openshift_ai_prompt_common::ws;
 mod k8s_job;
 use crate::k8s_job::{AsTungstenite, AsWSMessage};
@@ -34,7 +35,7 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
                     Some(msg) => {
                         match msg?.as_msg() {
                             Ok(m) => match m.msgtype {
-                                ws::WSMessageType::Prompt => match k8s_job::start(peer.to_string(), m.message.unwrap_or(String::from("")), m.model.unwrap_or(String::from("")), &mut ws_sender).await {
+                                ws::WSMessageType::Prompt => match k8s_job::start(peer.to_string(), m.message.unwrap_or(String::from("")), m.model.unwrap(), &mut ws_sender).await {
                                     Err(e) => ws_sender.send(ws::error(e).as_msg()).await?,
                                     Ok(url) => ws_sender.send(ws::result(url).as_msg()).await?,
                                 },

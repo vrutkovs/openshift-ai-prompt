@@ -10,7 +10,7 @@ spec:
   volumeMode: Filesystem
   resources:
     requests:
-      storage: 100Gi
+      storage: 200Gi
 ---
 kind: Job
 apiVersion: batch/v1
