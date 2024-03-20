@@ -10,7 +10,7 @@ use reqwasm::websocket::futures::WebSocket;
 
 pub fn generate_image(
     prompt: String,
-    progress: Callback<(AttrValue, f32)>,
+    progress: Callback<(AttrValue, f64)>,
     error: Callback<AttrValue>,
     result: Callback<AttrValue>,
 ) {

@@ -10,14 +10,14 @@ use crate::generate;
 #[derive(Debug, Default)]
 pub struct App {
     status: String,
-    progress: f32,
+    progress: f64,
     error: bool,
     result: Option<String>,
 }
 
 pub enum Msg {
     Prompt(AttrValue),
-    Progress((AttrValue, f32)),
+    Progress((AttrValue, f64)),
     Error(AttrValue),
     Result(AttrValue),
 }

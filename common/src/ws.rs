@@ -19,7 +19,7 @@ pub struct WSMessage {
     pub msgtype: WSMessageType,
     pub message: Option<String>,
     pub model: Option<models::Model>,
-    pub percentage: Option<f32>,
+    pub percentage: Option<f64>,
 }
 
 impl fmt::Display for WSMessage {
@@ -29,7 +29,7 @@ impl fmt::Display for WSMessage {
 }
 
 impl WSMessage {
-    pub fn get_progress(&self) -> Option<f32> {
+    pub fn get_progress(&self) -> Option<f64> {
         self.percentage
     }
 }
@@ -73,7 +73,7 @@ pub fn prompt(prompt: String) -> Result<reqwasm_Message, Error> {
     .as_msg()
 }
 
-pub fn progress(status: &str, percentage: f32) -> WSMessage {
+pub fn progress(status: &str, percentage: f64) -> WSMessage {
     WSMessage {
         msgtype: WSMessageType::Progress,
         message: Some(status.to_string()),

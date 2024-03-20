@@ -46,11 +46,11 @@ impl Component for SearchBar {
                     <TextInputGroup>
                         <TextInputGroupMain
                             placeholder="Placeholder"
-                            icon={Icon::Search}
                             value={ self.input.clone() }
+                            inner_ref = {self.input_ref.clone()}
                         />
                         <TextInputGroupUtilities>
-                            <Button icon={Icon::Times} variant={ButtonVariant::Plain} onclick={ctx.link().callback(|_| Msg::Generate)} />
+                            <Button icon={Icon::Search} variant={ButtonVariant::Plain} onclick={ctx.link().callback(|_| Msg::Generate)} />
                         </TextInputGroupUtilities>
                     </TextInputGroup>
 

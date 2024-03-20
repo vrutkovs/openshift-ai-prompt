@@ -1,3 +1,4 @@
+use patternfly_yew::prelude::*;
 use yew::prelude::*;
 
 #[derive(Clone, Properties, PartialEq)]
@@ -18,9 +19,9 @@ impl Component for Picture {
         let maybe_url = &ctx.props().url;
         if let Some(url) = maybe_url.as_ref() {
             html! {
-                <div class="m-4 w-full">
-                    <img class="h-512 w-512 object-scale-down" src={ url } />
-                </div>
+                <Bullseye>
+                    <Brand src={url} alt="Result" />
+                </Bullseye>
             }
         } else {
             html! {}
