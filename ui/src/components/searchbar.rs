@@ -1,3 +1,4 @@
+use patternfly_yew::prelude::*;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew::Properties;
@@ -29,10 +30,10 @@ impl Component for SearchBar {
     fn update(&mut self, ctx: &yew::Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Generate => {
-                let value_input_element = self.input_ref.cast::<HtmlInputElement>().unwrap();
-                let new_value = value_input_element.value();
-                ctx.props().on_generate.emit(new_value.clone().into());
-                self.input = new_value.clone();
+                let prompt_input_element = self.input_ref.cast::<HtmlInputElement>().unwrap();
+                let prompt = prompt_input_element.value();
+                ctx.props().on_generate.emit(prompt.clone().into());
+                self.input = prompt.clone();
                 true
             }
         }
@@ -40,12 +41,25 @@ impl Component for SearchBar {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
-            <nav class="items-center px-4 py-4 bg-gray-300 flex">
-                <input ref={self.input_ref.clone()} type="text" class="bg-white flex-grow h-12 px-4 rounded-lg focus:outline-none hover:cursor-pointer" name="" value={ self.input.clone() }/>
-                <button class="btn btn-blue w-1/10 h-12 px-4 flew-grow-0" onclick={ctx.link().callback(|_| Msg::Generate)}>
-                <i class="fa-solid fa-search"></i>
-                </button>
-            </nav>
+            <Split>
+                <SplitItem  fill=true>
+                    <TextInputGroup>
+                        <TextInputGroupMain
+                            placeholder="Placeholder"
+                            icon={Icon::Search}
+                            value={ self.input.clone() }
+                        />
+                        <TextInputGroupUtilities>
+                            <Button icon={Icon::Times} variant={ButtonVariant::Plain} onclick={ctx.link().callback(|_| Msg::Generate)} />
+                        </TextInputGroupUtilities>
+                    </TextInputGroup>
+
+                // <input  type="text" class="bg-white flex-grow h-12 px-4 rounded-lg focus:outline-none hover:cursor-pointer" name=""/>
+                // <button class="btn btn-blue w-1/10 h-12 px-4 flew-grow-0" onclick={ctx.link().callback(|_| Msg::Generate)}>
+                // <i class="fa-solid fa-search"></i>
+                // </button>
+                </SplitItem>
+            </Split>
         }
     }
 }

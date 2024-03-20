@@ -1,4 +1,5 @@
 use gloo::console;
+use patternfly_yew::prelude::*;
 use yew::prelude::*;
 
 use crate::components::picture::Picture;
@@ -68,11 +69,13 @@ impl Component for App {
         let on_generate = ctx.link().callback(Msg::Prompt);
 
         html! {
-          <div class="flex flex-col h-screen">
-            <SearchBar {on_generate}/>
-            <ProgressBar message={self.status.clone()} percent={self.progress} error={self.error} />
-            <Picture url={self.result.clone()}/>
-          </div>
+            <Page>
+                <Stack>
+                    <StackItem><SearchBar {on_generate}/></StackItem>
+                    <StackItem><ProgressBar message={self.status.clone()} percent={self.progress} error={self.error} /></StackItem>
+                    <StackItem fill=true><Picture url={self.result.clone()}/></StackItem>
+                </Stack>
+            </Page>
         }
     }
 }

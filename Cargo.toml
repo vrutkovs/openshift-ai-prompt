@@ -13,3 +13,6 @@ opt-level = 'z'
 # opt-level = 's'
 # link time optimization using using whole-program analysis
 lto = true
+
+[patch.crates-io]
+patternfly-yew = { git = "https://github.com/patternfly-yew/patternfly-yew", rev = "ac5c244b9f7deac9d1dc286da8ab33e4cc21b5f1" } # FIXME: awaiting release

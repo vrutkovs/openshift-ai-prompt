@@ -14,3 +14,4 @@ futures = "0.3.30"
 reqwasm = "0.5.0"
 openshift-ai-prompt-common = {path="../common"}
 anyhow = "1.0.71"
+patternfly-yew = { version = "0.5.6", features = ["tree", "icons-fab"] }

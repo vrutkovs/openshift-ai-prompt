@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Openshift AI demo</title>
 
-    <link data-trunk rel="tailwind-css" href="src/tailwind.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
-    <link data-trunk rel="icon" href="src/yew.svg"/>
-    <link data-trunk rel="copy-file" href="src/yew.svg"/>
+    <link data-trunk rel="scss" href="assets/style.scss">
+    <link data-trunk rel="copy-dir" href="node_modules/@patternfly/patternfly/assets" data-target-path="assets/">
+    <link data-trunk rel="copy-dir" href="node_modules/@fortawesome/fontawesome-free/webfonts">
+
+    <base data-trunk-public-url/>
     <base data-trunk-public-url/>
 </head>
 <body>
