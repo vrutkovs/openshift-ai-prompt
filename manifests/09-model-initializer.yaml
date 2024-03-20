@@ -126,4 +126,16 @@ spec:
           volumeMounts:
           - name: model
             mountPath: /mnt
+        - name: lora
+          image: >-
+            quay.io:443/vrutkovs/openshift-ai-prompt:git-lfs
+          command:
+          - /bin/git
+          - clone
+          - -v
+          - https://hf.co/latent-consistency11/lcm-lora-sdxl
+          - /mnt/lora
+          volumeMounts:
+          - name: model
+            mountPath: /mnt
       restartPolicy: OnFailure
