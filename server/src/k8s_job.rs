@@ -149,6 +149,52 @@ pub fn create_job_for_prompt(
     result_filename: String,
 ) -> Result<Job, serde_json::Error> {
     let base_model = model.get_basemodel().unwrap_or(model);
+    let adapter_names = model.get_additional_adapter_names().join(",");
+    let adapter_paths = model.get_additional_adapter_path().join(",");
+    let adapter_weights = model
+        .get_additional_adapter_weight()
+        .iter()
+        .map(|f| f.to_string())
+        .collect::<Vec<_>>()
+        .join(",");
+
+    let env = serde_json::json!([
+        {
+            "name": "PROMPT",
+            "value": prompt,
+        }, {
+            "name": "RESULT_FILENAME",
+            "value": result_filename,
+        }, {
+            "name": "AWS_ACCESS_KEY",
+            "value": s3_settings.s3_key,
+        }, {
+            "name": "AWS_ACCESS_SECRET",
+            "value": s3_settings.s3_secret,
+        }, {
+            "name": "S3_BUCKET_NAME",
+            "value": s3_settings.s3_bucket,
+        }, {
+            "name": "OPENJOURNEY_DEVICE",
+            "value": job_settings.device,
+        }, {
+            "name": "OPENJOURNEY_STEPS",
+            "value": job_settings.steps.to_string(),
+        }, {
+            "name": "OPENJOURNEY_MODEL",
+            "value": base_model.get_subpath(),
+        }, {
+            "name": "ADAPTER_NAMES",
+            "value": adapter_names,
+        }, {
+            "name": "ADAPTER_PATHS",
+            "value": adapter_paths,
+        }, {
+            "name": "ADAPTER_WEIGHTS",
+            "value": adapter_weights,
+        }
+    ]);
+
     serde_json::from_value(serde_json::json!({
         "apiVersion": "batch/v1",
         "kind": "Job",
@@ -167,33 +213,7 @@ pub fn create_job_for_prompt(
                     "containers": [{
                         "name": "generate",
                         "image": job_settings.image,
-                        "env": [
-                            {
-                                "name": "PROMPT",
-                                "value": prompt,
-                            }, {
-                                "name": "RESULT_FILENAME",
-                                "value": result_filename,
-                            }, {
-                                "name": "AWS_ACCESS_KEY",
-                                "value": s3_settings.s3_key,
-                            }, {
-                                "name": "AWS_ACCESS_SECRET",
-                                "value": s3_settings.s3_secret,
-                            }, {
-                                "name": "S3_BUCKET_NAME",
-                                "value": s3_settings.s3_bucket,
-                            }, {
-                                "name": "OPENJOURNEY_DEVICE",
-                                "value": job_settings.device,
-                            }, {
-                                "name": "OPENJOURNEY_STEPS",
-                                "value": job_settings.steps.to_string(),
-                            }, {
-                                "name": "OPENJOURNEY_MODEL",
-                                "value": base_model.get_subpath(),
-                            }
-                        ],
+                        "env": env,
                         "imagePullPolicy": "Always",
                         "resources": {
                             "limits": {

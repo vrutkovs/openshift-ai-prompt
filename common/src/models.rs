@@ -15,6 +15,7 @@ pub enum Model {
     StableDiffusionXL,
     Tintin,
     Simpsons,
+    Pixel,
 }
 
 impl Model {
@@ -23,6 +24,7 @@ impl Model {
             Model::StableDiffusionXL => String::from("xlbase"),
             Model::Tintin => String::from("tintin"),
             Model::Simpsons => String::from("simpsons"),
+            Model::Pixel => String::from("pixel-art"),
         }
     }
 
@@ -31,12 +33,14 @@ impl Model {
             Model::StableDiffusionXL => String::from("Stable Diffusion XL"),
             Model::Tintin => String::from("Tintin"),
             Model::Simpsons => String::from("Simpsons"),
+            Model::Pixel => String::from("Pixel Art"),
         }
     }
 
     pub fn get_basemodel(self) -> Option<Model> {
         match self {
             Model::StableDiffusionXL | Model::Tintin | Model::Simpsons => None,
+            Model::Pixel => Some(Model::StableDiffusionXL),
         }
     }
 
@@ -45,6 +49,7 @@ impl Model {
             "xlbase" => Ok(Model::StableDiffusionXL),
             "tintin" => Ok(Model::Tintin),
             "simpsons" => Ok(Model::Simpsons),
+            "pixel-art" => Ok(Model::Pixel),
             &_ => bail!("Invalid model specified"),
         }
     }
@@ -54,6 +59,28 @@ impl Model {
             Model::StableDiffusionXL => None,
             Model::Tintin => Some(String::from("((herge_style))")),
             Model::Simpsons => Some(String::from("((as a simpsons character))")),
+            Model::Pixel => Some(String::from("((pixel))")),
+        }
+    }
+
+    pub fn get_additional_adapter_weight(self) -> Vec<f64> {
+        match self {
+            Model::StableDiffusionXL | Model::Tintin | Model::Simpsons => vec![],
+            Model::Pixel => vec![1.2],
+        }
+    }
+
+    pub fn get_additional_adapter_names(self) -> Vec<String> {
+        match self {
+            Model::StableDiffusionXL | Model::Tintin | Model::Simpsons => vec![],
+            Model::Pixel => vec![String::from("pixel-art")],
+        }
+    }
+
+    pub fn get_additional_adapter_path(self) -> Vec<String> {
+        match self {
+            Model::StableDiffusionXL | Model::Tintin | Model::Simpsons => vec![],
+            Model::Pixel => vec![String::from("pixel-art/pixel-art-xl.safetensors")],
         }
     }
 }
