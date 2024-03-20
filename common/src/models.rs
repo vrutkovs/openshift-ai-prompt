@@ -8,6 +8,7 @@ pub struct ModelType {
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
+#[serde(rename_all_fields(serialize = "lowercase", deserialize = "lowercase"))]
 pub enum Model {
     StableDiffusionXL,
     Tintin,
