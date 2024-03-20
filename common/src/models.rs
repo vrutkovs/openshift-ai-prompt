@@ -48,4 +48,12 @@ impl Model {
             &_ => bail!("Invalid model specified"),
         }
     }
+
+    pub fn append_trigger_words(self) -> Option<String> {
+        match self {
+            Model::StableDiffusionXL => None,
+            Model::Tintin => Some(String::from("((herge_style))")),
+            Model::Simpsons => Some(String::from("((as a simpsons character))")),
+        }
+    }
 }

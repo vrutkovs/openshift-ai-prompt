@@ -90,9 +90,13 @@ pub async fn start(
         .collect();
     let result_filename = format!("{s}.png");
 
+    let amended_prompt = match model.append_trigger_words() {
+        Some(s) => format!("{} {}", prompt, s),
+        None => prompt,
+    };
     info!(
         "Peer {}: generating '{}' and saving to {}",
-        peer, prompt, result_filename
+        peer, amended_prompt, result_filename
     );
 
     let client = Client::try_default()
@@ -100,7 +104,7 @@ pub async fn start(
         .context("Failed to create k8s client")?;
     let jobs: Api<Job> = Api::default_namespaced(client);
     let job_json = create_job_for_prompt(
-        prompt,
+        amended_prompt,
         model,
         job_settings.clone(),
         s3_settings.clone(),
