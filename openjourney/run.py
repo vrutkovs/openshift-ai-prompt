@@ -33,7 +33,7 @@ ADAPTER_WEIGHTS=os.environ.get("ADAPTER_WEIGHTS")
 if ADAPTER_PATHS and ADAPTER_NAMES and ADAPTER_WEIGHTS:
     paths = ADAPTER_PATHS.split(',')
     names = ADAPTER_NAMES.split(',')
-    weights = ADAPTER_WEIGHTS.split(',')
+    weights = [float(x) for x in ADAPTER_WEIGHTS.split(',')]
     if len(paths) > 0 and len(names) > 0 and len(weights) > 0 and \
        len(paths) == len(paths) == len(weights):
         for idx, p in enumerate(paths):
