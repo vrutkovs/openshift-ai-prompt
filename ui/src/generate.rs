@@ -1,3 +1,4 @@
+use openshift_ai_prompt_common::models::Model;
 use openshift_ai_prompt_common::ws;
 use openshift_ai_prompt_common::ws::AsWSMessage;
 
@@ -10,10 +11,12 @@ use reqwasm::websocket::futures::WebSocket;
 
 pub fn generate_image(
     prompt: String,
+    model_subpath: String,
     progress: Callback<(AttrValue, f64)>,
     error: Callback<AttrValue>,
     result: Callback<AttrValue>,
 ) {
+    let model = Model::from_subpath(&model_subpath).expect("invalid model");
     progress.emit((AttrValue::from("Initializing"), 0.1));
 
     let window = web_sys::window().expect("Missing Window");
@@ -33,7 +36,7 @@ pub fn generate_image(
     let (mut write, mut read) = ws.split();
 
     spawn_local(async move {
-        match ws::prompt(prompt) {
+        match ws::prompt(prompt, model) {
             Err(e) => error.emit(AttrValue::from(format!("{:?}", e))),
             Ok(msg) => write.send(msg).await.unwrap(),
         };

@@ -16,7 +16,7 @@ pub struct App {
 }
 
 pub enum Msg {
-    Prompt(AttrValue),
+    Prompt((AttrValue, AttrValue)),
     Progress((AttrValue, f64)),
     Error(AttrValue),
     Result(AttrValue),
@@ -37,14 +37,24 @@ impl Component for App {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Prompt(prompt) => {
-                console::log!("generating prompt %s", prompt.as_str());
+            Msg::Prompt((prompt, model)) => {
+                console::log!(
+                    "generating prompt %s using model %s",
+                    prompt.as_str(),
+                    model.as_str()
+                );
 
                 self.result = None;
                 let on_progress = ctx.link().callback(Msg::Progress);
                 let on_error = ctx.link().callback(Msg::Error);
                 let on_result = ctx.link().callback(Msg::Result);
-                generate::generate_image(prompt.to_string(), on_progress, on_error, on_result);
+                generate::generate_image(
+                    prompt.to_string(),
+                    model.to_string(),
+                    on_progress,
+                    on_error,
+                    on_result,
+                );
                 true
             }
             Msg::Progress((status, progress)) => {

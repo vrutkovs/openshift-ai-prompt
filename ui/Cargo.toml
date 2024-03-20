@@ -15,3 +15,5 @@ reqwasm = "0.5.0"
 openshift-ai-prompt-common = {path="../common"}
 anyhow = "1.0.71"
 patternfly-yew = { version = "0.5.6", features = ["tree", "icons-fab"] }
+enum-iterator = "2.0.0"
+lazy_static = "1.4.0"

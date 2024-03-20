@@ -1,19 +1,27 @@
+use enum_iterator::all;
 use patternfly_yew::prelude::*;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew::Properties;
-
 pub enum Msg {
     Generate,
+    Select(Model),
+}
+
+use openshift_ai_prompt_common::models::Model;
+
+lazy_static::lazy_static! {
+    static ref MODELS: Vec<Model> = all::<Model>().collect::<Vec<_>>();
 }
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props {
-    pub on_generate: Callback<AttrValue>,
+    pub on_generate: Callback<(AttrValue, AttrValue)>,
 }
 
 pub struct SearchBar {
     input: String,
+    model: Model,
     input_ref: NodeRef,
 }
 impl Component for SearchBar {
@@ -23,6 +31,7 @@ impl Component for SearchBar {
     fn create(_: &Context<Self>) -> Self {
         Self {
             input: String::from("A person wearing red fedora in style of Picasso"),
+            model: Model::StableDiffusionXL,
             input_ref: NodeRef::default(),
         }
     }
@@ -32,8 +41,15 @@ impl Component for SearchBar {
             Msg::Generate => {
                 let prompt_input_element = self.input_ref.cast::<HtmlInputElement>().unwrap();
                 let prompt = prompt_input_element.value();
-                ctx.props().on_generate.emit(prompt.clone().into());
+                ctx.props().on_generate.emit((
+                    prompt.clone().into(),
+                    self.model.get_subpath().clone().into(),
+                ));
                 self.input = prompt.clone();
+                true
+            }
+            Msg::Select(m) => {
+                self.model = m;
                 true
             }
         }
@@ -42,7 +58,7 @@ impl Component for SearchBar {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <Split>
-                <SplitItem  fill=true>
+                <SplitItem fill=true>
                     <TextInputGroup>
                         <TextInputGroupMain
                             placeholder="Placeholder"
@@ -53,11 +69,23 @@ impl Component for SearchBar {
                             <Button icon={Icon::Search} variant={ButtonVariant::Plain} onclick={ctx.link().callback(|_| Msg::Generate)} />
                         </TextInputGroupUtilities>
                     </TextInputGroup>
-
-                // <input  type="text" class="bg-white flex-grow h-12 px-4 rounded-lg focus:outline-none hover:cursor-pointer" name=""/>
-                // <button class="btn btn-blue w-1/10 h-12 px-4 flew-grow-0" onclick={ctx.link().callback(|_| Msg::Generate)}>
-                // <i class="fa-solid fa-search"></i>
-                // </button>
+                </SplitItem>
+                <SplitItem>
+                    <Dropdown
+                        variant={MenuToggleVariant::Plain}
+                        icon={Icon::EllipsisV}
+                    >
+                    {for MODELS.iter().map(|m| {
+                        let onclick = ctx.link().callback(move |_| Msg::Select(*m));
+                        let mut icon = None;
+                        if *m == self.model {
+                            icon = Some(html!(Icon::CheckCircle))
+                        }
+                        html_nested!(<MenuAction {icon} {onclick}>
+                            <span>{m.get_name()}</span>
+                        </MenuAction>)
+                    })}
+                    </Dropdown>
                 </SplitItem>
             </Split>
         }
