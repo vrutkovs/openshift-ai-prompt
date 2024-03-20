@@ -6,7 +6,7 @@ use yew::prelude::*;
 
 use futures::{SinkExt, StreamExt};
 use gloo::console;
-use reqwasm::websocket::{futures::WebSocket, Message as reqwasm_Message};
+use reqwasm::websocket::futures::WebSocket;
 
 pub fn generate_image(
     prompt: String,
@@ -33,7 +33,10 @@ pub fn generate_image(
     let (mut write, mut read) = ws.split();
 
     spawn_local(async move {
-        write.send(reqwasm_Message::Text(prompt)).await.unwrap();
+        match ws::prompt(prompt) {
+            Err(e) => error.emit(AttrValue::from(format!("{:?}", e))),
+            Ok(msg) => write.send(msg).await.unwrap(),
+        };
         while let Some(msg) = read.next().await {
             match msg.as_msg() {
                 Ok(ws_message) => match ws_message.msgtype {
@@ -46,9 +49,10 @@ pub fn generate_image(
                         result.emit(AttrValue::from(ws_message.to_string()))
                     }
                     ws::WSMessageType::Error => error.emit(AttrValue::from(ws_message.to_string())),
+                    ws::WSMessageType::Prompt => todo!(),
                 },
                 Err(e) => {
-                    progress.emit((AttrValue::from(format!("{:?}", e)), 0.0));
+                    error.emit(AttrValue::from(format!("{:?}", e)));
                 }
             }
         }

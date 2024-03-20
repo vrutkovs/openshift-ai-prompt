@@ -7,6 +7,7 @@ use std::fmt;
 pub enum WSMessageType {
     #[default]
     Progress,
+    Prompt,
     Result,
     Error,
 }
@@ -16,6 +17,7 @@ pub struct WSMessage {
     #[serde(rename(serialize = "type", deserialize = "type"))]
     pub msgtype: WSMessageType,
     pub message: Option<String>,
+    pub model: Option<String>,
     pub percentage: Option<f32>,
 }
 
@@ -47,11 +49,35 @@ impl AsWSMessage for Result<reqwasm_Message, WebSocketError> {
     }
 }
 
+pub trait AsReqWASMMessage {
+    fn as_msg(&self) -> Result<reqwasm_Message, Error>;
+}
+
+impl AsReqWASMMessage for WSMessage {
+    fn as_msg(&self) -> Result<reqwasm_Message, Error> {
+        match self.msgtype {
+            WSMessageType::Prompt => Ok(reqwasm_Message::Text(serde_json::to_string(&self)?)),
+            _ => anyhow::bail!("not a prompt"),
+        }
+    }
+}
+
+pub fn prompt(prompt: String) -> Result<reqwasm_Message, Error> {
+    WSMessage {
+        msgtype: WSMessageType::Prompt,
+        message: Some(prompt.to_string()),
+        model: Some(String::from("model")),
+        ..Default::default()
+    }
+    .as_msg()
+}
+
 pub fn progress(status: &str, percentage: f32) -> WSMessage {
     WSMessage {
         msgtype: WSMessageType::Progress,
         message: Some(status.to_string()),
         percentage: Some(percentage),
+        ..Default::default()
     }
 }
 

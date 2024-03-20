@@ -1,7 +1,7 @@
 use crate::Message;
 use log::*;
 
-use anyhow::Context;
+use anyhow::{Context, Error};
 use futures_util::{stream::SplitSink, SinkExt};
 use openshift_ai_prompt_common::ws::{self, WSMessage};
 use tokio::net::TcpStream;
@@ -35,6 +35,19 @@ impl AsTungstenite for WSMessage {
     }
 }
 
+pub trait AsWSMessage {
+    fn as_msg(&self) -> Result<WSMessage, Error>;
+}
+
+impl AsWSMessage for tungstenite_Message {
+    fn as_msg(&self) -> Result<WSMessage, Error> {
+        if !self.is_text() {
+            anyhow::bail!("not text");
+        }
+        Ok(serde_json::from_str(&self.to_string())?)
+    }
+}
+
 #[derive(Clone, Envconfig)]
 pub struct JobSettings {
     #[envconfig(from = "GENERATE_IMAGE")]
@@ -60,6 +73,7 @@ pub struct S3Settings {
 pub async fn start(
     peer: String,
     prompt: String,
+    model: String,
     ws_sender: &mut SplitSink<WebSocketStream<TcpStream>, Message>,
 ) -> Result<String, anyhow::Error> {
     ws_sender
@@ -87,6 +101,7 @@ pub async fn start(
     let jobs: Api<Job> = Api::default_namespaced(client);
     let job_json = create_job_for_prompt(
         prompt,
+        model,
         job_settings.clone(),
         s3_settings.clone(),
         result_filename.clone(),
@@ -124,6 +139,7 @@ pub async fn start(
 
 pub fn create_job_for_prompt(
     prompt: String,
+    model: String,
     job_settings: JobSettings,
     s3_settings: S3Settings,
     result_filename: String,
@@ -179,8 +195,7 @@ pub fn create_job_for_prompt(
                         "volumeMounts": [{
                             "name": "model",
                             "mountPath": "/opt/app-root/src/model",
-                            "subPath": "model",
-                            "readOnly": true,
+                            "subPath": model,
                         }]
                     }],
                     "volumes": [{

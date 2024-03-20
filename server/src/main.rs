@@ -10,7 +10,7 @@ use tokio_tungstenite::{
 
 use openshift_ai_prompt_common::ws;
 mod k8s_job;
-use crate::k8s_job::AsTungstenite;
+use crate::k8s_job::{AsTungstenite, AsWSMessage};
 
 async fn accept_connection(peer: SocketAddr, stream: TcpStream) {
     if let Err(e) = handle_connection(peer, stream).await {
@@ -32,15 +32,15 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
             msg = ws_receiver.next() => {
                 match msg {
                     Some(msg) => {
-                        let msg = msg?;
-                        if msg.is_text() {
-                            let res = k8s_job::start(peer.to_string(), msg.to_string(), &mut ws_sender).await;
-                            match res {
-                                Err(e) => ws_sender.send(ws::error(e).as_msg()).await?,
-                                Ok(url) => ws_sender.send(ws::result(url).as_msg()).await?,
-                            };
-                        } else if msg.is_close() || msg.is_binary() {
-                            break;
+                        match msg?.as_msg() {
+                            Ok(m) => match m.msgtype {
+                                ws::WSMessageType::Prompt => match k8s_job::start(peer.to_string(), m.message.unwrap_or(String::from("")), m.model.unwrap_or(String::from("")), &mut ws_sender).await {
+                                    Err(e) => ws_sender.send(ws::error(e).as_msg()).await?,
+                                    Ok(url) => ws_sender.send(ws::result(url).as_msg()).await?,
+                                },
+                                _ => todo!(),
+                            },
+                            Err(_) => todo!(),
                         }
                     }
                     None => break,
