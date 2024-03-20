@@ -1,11 +1,17 @@
 import os
 import sys
+
+MODEL_BASEDIR=os.path.abspath('/opt/app-root/src/models')
+
 DEVICE=os.environ.get("OPENJOURNEY_DEVICE", "CPU")
 STEPS=os.environ.get("OPENJOURNEY_STEPS", 20)
 PROMPT=os.environ.get("PROMPT", 'A person in red fedora, in style of picasso')
 RESULT_FILENAME=os.environ.get("RESULT_FILENAME", 'foobar.png')
 
-print(f"Generating picture for '{PROMPT}' using {STEPS} steps")
+print(f"Generating picture for '{PROMPT}' with {STEPS} steps")
+MODEL=os.environ.get("OPENJOURNEY_MODEL", "xlbase")
+model_path = os.path.join(MODEL_BASEDIR, MODEL)
+print(f"Using model from '{MODEL}'")
 
 AWS_ACCESS_KEY=os.environ.get("AWS_ACCESS_KEY")
 AWS_ACCESS_SECRET=os.environ.get("AWS_ACCESS_SECRET")
@@ -16,10 +22,26 @@ from diffusers import DPMSolverMultistepScheduler
 import torch
 
 pipeline = AutoPipelineForText2Image.from_pretrained(
-	'./model',
+    pretrained_model_or_path = os.path.join(MODEL_BASEDIR, MODEL),
     torch_dtype=torch.float16, variant="fp16",
     use_safetensors=True,
-).to(DEVICE)
+)
+
+ADAPTER_PATHS=os.environ.get("ADAPTER_PATHS")
+ADAPTER_NAMES=os.environ.get("ADAPTER_NAMES")
+ADAPTER_WEIGHTS=os.environ.get("ADAPTER_WEIGHTS")
+if ADAPTER_PATHS and ADAPTER_NAMES and ADAPTER_WEIGHTS:
+    paths = ADAPTER_PATHS.split(',')
+    names = ADAPTER_NAMES.split(',')
+    weights = ADAPTER_WEIGHTS.split(',')
+    if len(paths) > 0 and len(names) > 0 and len(weights) > 0 and \
+       len(paths) == len(paths) == len(weights):
+        for idx, p in enumerate(paths):
+            abspath = os.path.abspath(os.path.join(MODEL_BASEDIR, p))
+            pipeline.load_lora_weights(abspath, adapter_name=names[idx])
+        pipeline.set_adapters(names, adapter_weights=weights)
+
+pipeline.to(device="cuda", dtype=torch.float16)
 
 import random
 rand = random.randrange(100000)
