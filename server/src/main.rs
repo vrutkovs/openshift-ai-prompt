@@ -1,15 +1,14 @@
-use futures_util::SinkExt;
-use futures_util::StreamExt;
+use futures_util::{stream::SplitSink, SinkExt, StreamExt};
 use log::*;
+use openshift_ai_prompt_common::{models, ws};
 use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{
     accept_async,
     tungstenite::{Error, Message, Result},
+    WebSocketStream,
 };
 
-use openshift_ai_prompt_common::models;
-use openshift_ai_prompt_common::ws;
 mod k8s_job;
 use crate::k8s_job::{AsTungstenite, AsWSMessage};
 
@@ -34,14 +33,8 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
                 match msg {
                     Some(msg) => {
                         match msg?.as_msg() {
-                            Ok(m) => match m.msgtype {
-                                ws::WSMessageType::Prompt => match k8s_job::start(peer.to_string(), m.message.unwrap_or(String::from("")), m.model.unwrap(), &mut ws_sender).await {
-                                    Err(e) => ws_sender.send(ws::error(e).as_msg()).await?,
-                                    Ok(url) => ws_sender.send(ws::result(url).as_msg()).await?,
-                                },
-                                _ => todo!(),
-                            },
-                            Err(_) => todo!(),
+                            Ok(m) => handle_msg(m, peer, &mut ws_sender).await?,
+                            Err(e) => ws_sender.send(ws::error(e).as_msg()).await?,
                         }
                     }
                     None => break,
@@ -51,6 +44,31 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
     }
 
     Ok(())
+}
+
+async fn handle_msg(
+    m: ws::WSMessage,
+    peer: SocketAddr,
+    ws_sender: &mut SplitSink<WebSocketStream<TcpStream>, Message>,
+) -> Result<(), Error> {
+    match m.msgtype {
+        ws::WSMessageType::Prompt => match k8s_job::start(
+            peer.to_string(),
+            m.message.unwrap_or(String::from("")),
+            m.model.unwrap(),
+            ws_sender,
+        )
+        .await
+        {
+            Err(e) => ws_sender.send(ws::error(e).as_msg()).await,
+            Ok(url) => ws_sender.send(ws::result(url).as_msg()).await,
+        },
+        _ => {
+            ws_sender
+                .send(ws::error(anyhow::format_err!("unexpected error type")).as_msg())
+                .await
+        }
+    }
 }
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 10)]
