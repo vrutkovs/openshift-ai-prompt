@@ -189,6 +189,9 @@ pub fn create_job_for_prompt(
                             }, {
                                 "name": "OPENJOURNEY_STEPS",
                                 "value": job_settings.steps.to_string(),
+                            }, {
+                                "name": "OPENJOURNEY_MODEL",
+                                "value": base_model.get_subpath(),
                             }
                         ],
                         "imagePullPolicy": "Always",
@@ -198,13 +201,12 @@ pub fn create_job_for_prompt(
                             }
                         },
                         "volumeMounts": [{
-                            "name": "model",
-                            "mountPath": "/opt/app-root/src/model",
-                            "subPath": base_model.get_subpath(),
+                            "name": "models",
+                            "mountPath": "/opt/app-root/src/models",
                         }]
                     }],
                     "volumes": [{
-                        "name": "model",
+                        "name": "models",
                         "persistentVolumeClaim": {
                             "claimName": "model",
                         }
