@@ -40,7 +40,7 @@ spec:
           - https://hf.co/taki0112/lora-trained-xl_abstract-impressionism_split
           - /mnt/impressionism
           volumeMounts:
-          - name: impressionism
+          - name: model
             mountPath: /mnt
         - name: pixel-art-xl
           image: >-
