@@ -98,9 +98,9 @@ impl Model {
             Model::StableDiffusionXL | Model::Tintin | Model::Simpsons => vec![],
             Model::Lego => vec![String::from("lego")],
             Model::Ikea => vec![String::from("ikea")],
-            Model::Stickers => vec![String::from("stickers"), String::from("lora")],
-            Model::Pixel => vec![String::from("pixel-art"), String::from("lora")],
-            Model::Impressionism => vec![String::from("impressionism"), String::from("lora")],
+            Model::Stickers => vec![String::from("stickers")],
+            Model::Pixel => vec![String::from("pixel-art")],
+            Model::Impressionism => vec![String::from("impressionism")],
         }
     }
 
@@ -109,18 +109,11 @@ impl Model {
             Model::StableDiffusionXL | Model::Tintin | Model::Simpsons => vec![],
             Model::Lego => vec![String::from("lego/legominifig-v1.0-000003.safetensors")],
             Model::Ikea => vec![String::from("ikea/ikea_instructions_xl_v1_5.safetensors")],
-            Model::Stickers => vec![
-                String::from("stickers/StickersRedmond.safetensors"),
-                String::from("lora/pytorch_lora_weights.safetensors"),
-            ],
-            Model::Pixel => vec![
-                String::from("pixel-art/pixel-art-xl.safetensors"),
-                String::from("lora/pytorch_lora_weights.safetensors"),
-            ],
-            Model::Impressionism => vec![
-                String::from("impressionism/pytorch_lora_weights.safetensors"),
-                String::from("lora/pytorch_lora_weights.safetensors"),
-            ],
+            Model::Stickers => vec![String::from("stickers/StickersRedmond.safetensors")],
+            Model::Pixel => vec![String::from("pixel-art/pixel-art-xl.safetensors")],
+            Model::Impressionism => vec![String::from(
+                "impressionism/pytorch_lora_weights.safetensors",
+            )],
         }
     }
 }
