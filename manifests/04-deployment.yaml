@@ -26,12 +26,12 @@ spec:
     spec:
       containers:
         - name: ui
-          image: ' '
+          image: 'quay.io/vrutkovs/openshift-ai-prompt:ui'
           ports:
             - containerPort: 8080
               protocol: TCP
         - name: server
-          image: ' '
+          image: 'quay.io/vrutkovs/openshift-ai-prompt:server'
           ports:
             - containerPort: 8081
               protocol: TCP
