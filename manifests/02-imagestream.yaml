@@ -17,14 +17,11 @@ spec:
       from:
         kind: DockerImage
         name: 'quay.io/vrutkovs/openshift-ai-prompt:ui'
-        type: Local
     - name: server
       from:
         kind: DockerImage
         name: 'quay.io/vrutkovs/openshift-ai-prompt:server'
-        type: Local
     - name: openjourney
       from:
         kind: DockerImage
         name: 'quay.io/vrutkovs/openshift-ai-prompt:openjourney'
-        type: Local
