@@ -156,6 +156,7 @@ pub async fn start(
             &pod_name,
             &LogParams {
                 follow: true,
+                pretty: true,
                 ..LogParams::default()
             },
         )
@@ -268,6 +269,12 @@ pub fn create_job_for_prompt(
         }, {
             "name": "ADAPTER_WEIGHTS",
             "value": model.adapters().weights(),
+        }, {
+            "name": "PYTHONUNBUFFERED",
+            "value": "1",
+        }, {
+            "name": "TQDM_POSITION",
+            "value": "1",
         }
     ]);
 
