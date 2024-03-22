@@ -16,6 +16,15 @@ rules:
     resources:
       - cronjobs
       - jobs
+  - verbs:
+      - list
+      - get
+      - watch
+    apiGroups:
+      - ''
+    resources:
+      - pods
+      - pods/log
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
