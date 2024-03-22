@@ -2,18 +2,20 @@ use crate::models::Join;
 use crate::{models, Message};
 use log::*;
 
+use crate::k8s_job::conditions::Condition;
 use anyhow::{Context, Error};
-use futures_util::{stream::SplitSink, SinkExt};
-use openshift_ai_prompt_common::ws::{self, WSMessage};
-use tokio::net::TcpStream;
-use tokio_tungstenite::WebSocketStream;
-
+use futures_util::TryStreamExt;
+use futures_util::{stream::SplitSink, AsyncBufReadExt, SinkExt};
 use k8s_openapi::api::batch::v1::Job;
+use k8s_openapi::api::core::v1::Pod;
 use kube::{
-    api::{Api, DeleteParams, PostParams},
+    api::{Api, DeleteParams, ListParams, LogParams, PostParams},
     runtime::wait::{await_condition, conditions},
     Client, ResourceExt,
 };
+use openshift_ai_prompt_common::ws::{self, WSMessage};
+use tokio::net::TcpStream;
+use tokio_tungstenite::WebSocketStream;
 
 use envconfig::Envconfig;
 use rand::{distributions::Alphanumeric, Rng};
@@ -103,7 +105,7 @@ pub async fn start(
     let client = Client::try_default()
         .await
         .context("Failed to create k8s client")?;
-    let jobs: Api<Job> = Api::default_namespaced(client);
+    let jobs: Api<Job> = Api::default_namespaced(client.clone());
     let job_json = create_job_for_prompt(
         amended_prompt,
         model,
@@ -124,10 +126,53 @@ pub async fn start(
         .await
         .context("Failed to send progress message")?;
 
-    let cond = await_condition(jobs.clone(), &job_name, conditions::is_job_completed());
+    let cond = await_condition(jobs.clone(), &job_name, job_has_running_pods());
     let _ = tokio::time::timeout(std::time::Duration::from_secs(job_settings.timeout), cond)
         .await
-        .context("Timeout waiting for job to complete")?;
+        .context("Timeout waiting for job to start pods")?;
+
+    let pod_label_selector = format!("job-name={}", job_name);
+    let pods: Api<Pod> = Api::default_namespaced(client);
+    let pod_list = pods
+        .list(&ListParams::default().labels(pod_label_selector.as_str()))
+        .await?;
+    let pod = pod_list
+        .iter()
+        .last()
+        .context("Unable to find started pods")?;
+    let pod_name = pod.name_any();
+    ws_sender
+        .send(ws::progress(format!("Created pod {pod_name}").as_str(), 0.7).as_msg())
+        .await
+        .context("Failed to send progress message")?;
+
+    let cond = await_condition(pods.clone(), &pod_name, pod_is_started());
+    let _ = tokio::time::timeout(std::time::Duration::from_secs(job_settings.timeout), cond)
+        .await
+        .context("Timeout waiting for pod to become running")?;
+
+    let mut logs = pods
+        .log_stream(
+            &pod_name,
+            &LogParams {
+                follow: true,
+                ..LogParams::default()
+            },
+        )
+        .await?
+        .lines();
+    while let Some(line) = logs.try_next().await? {
+        ws_sender
+            .send(ws::progress(line.as_str(), 0.8).as_msg())
+            .await
+            .context("Failed to send progress message")?;
+    }
+
+    let cond = await_condition(jobs.clone(), &job_name, job_succeeded());
+    let _ = tokio::time::timeout(std::time::Duration::from_secs(job_settings.timeout), cond)
+        .await
+        .context("Timeout waiting for job status check")?;
+
     jobs.delete(&job_name, &DeleteParams::background())
         .await
         .context("Failed to delete job")?;
@@ -140,6 +185,45 @@ pub async fn start(
     Ok(format!(
         "https://{bucket}.s3.amazonaws.com/{result_filename}"
     ))
+}
+
+pub fn job_succeeded() -> impl Condition<Job> {
+    |obj: Option<&Job>| {
+        if let Some(job) = &obj {
+            if let Some(s) = &job.status {
+                if let Some(succeeded) = &s.succeeded {
+                    return succeeded > &0;
+                }
+            }
+        }
+        false
+    }
+}
+
+pub fn job_has_running_pods() -> impl Condition<Job> {
+    |obj: Option<&Job>| {
+        if let Some(job) = &obj {
+            if let Some(s) = &job.status {
+                if let Some(active) = &s.active {
+                    return active > &0;
+                }
+            }
+        }
+        false
+    }
+}
+
+pub fn pod_is_started() -> impl Condition<Pod> {
+    |obj: Option<&Pod>| {
+        if let Some(pod) = &obj {
+            if let Some(s) = &pod.status {
+                if let Some(phase) = &s.phase {
+                    return phase == "Running";
+                }
+            }
+        }
+        false
+    }
 }
 
 pub fn create_job_for_prompt(
