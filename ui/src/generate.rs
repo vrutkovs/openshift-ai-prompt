@@ -7,7 +7,7 @@ use yew::prelude::*;
 
 use futures::{SinkExt, StreamExt};
 use gloo::console;
-use reqwasm::websocket::futures::WebSocket;
+use reqwasm::websocket::{events::CloseEvent, futures::WebSocket, WebSocketError};
 
 pub fn generate_image(
     prompt: String,
@@ -51,9 +51,14 @@ pub fn generate_image(
                         result.emit(AttrValue::from(ws_message.to_string()))
                     }
                     ws::WSMessageType::Error => error.emit(AttrValue::from(ws_message.to_string())),
-                    ws::WSMessageType::Prompt => todo!(),
+                    ws::WSMessageType::Prompt => {
+                        error.emit(AttrValue::from("prompt received".to_string()))
+                    }
                 },
                 Err(e) => {
+                    if let Some(WebSocketError::ConnectionClose(_)) = msg.err() {
+                        continue;
+                    }
                     error.emit(AttrValue::from(format!("{:?}", e)));
                 }
             }

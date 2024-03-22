@@ -32,7 +32,11 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
             msg = ws_receiver.next() => {
                 match msg {
                     Some(msg) => {
-                        match msg?.as_msg() {
+                        let msg = msg?;
+                        if msg.is_close() {
+                            continue
+                        }
+                        match msg.as_msg() {
                             Ok(m) => handle_msg(m, peer, &mut ws_sender).await?,
                             Err(e) => ws_sender.send(ws::error(e).as_msg()).await?,
                         }
