@@ -11,12 +11,11 @@ use reqwasm::websocket::futures::WebSocket;
 
 pub fn generate_image(
     prompt: String,
-    model_subpath: String,
+    model: Model,
     progress: Callback<(AttrValue, f64)>,
     error: Callback<AttrValue>,
     result: Callback<AttrValue>,
 ) {
-    let model = Model::from_subpath(&model_subpath).expect("invalid model");
     progress.emit((AttrValue::from("Initializing"), 0.1));
 
     let window = web_sys::window().expect("Missing Window");

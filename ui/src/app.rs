@@ -6,6 +6,7 @@ use crate::components::picture::Picture;
 use crate::components::progress::ProgressBar;
 use crate::components::searchbar::SearchBar;
 use crate::generate;
+use openshift_ai_prompt_common::models::Model;
 
 #[derive(Debug, Default)]
 pub struct App {
@@ -16,7 +17,7 @@ pub struct App {
 }
 
 pub enum Msg {
-    Prompt((AttrValue, AttrValue)),
+    Prompt((AttrValue, Model)),
     Progress((AttrValue, f64)),
     Error(AttrValue),
     Result(AttrValue),
@@ -41,7 +42,7 @@ impl Component for App {
                 console::log!(
                     "generating prompt %s using model %s",
                     prompt.as_str(),
-                    model.as_str()
+                    model.name()
                 );
 
                 self.result = None;
@@ -50,7 +51,7 @@ impl Component for App {
                 let on_result = ctx.link().callback(Msg::Result);
                 generate::generate_image(
                     prompt.to_string(),
-                    model.to_string(),
+                    model,
                     on_progress,
                     on_error,
                     on_result,

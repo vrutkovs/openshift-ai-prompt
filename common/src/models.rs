@@ -1,15 +1,42 @@
-use anyhow::{bail, Error};
-use enum_iterator::Sequence;
+use enum_iterator::{all, Sequence};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
-pub struct ModelType {
-    subpath: String,
-    name: String,
-    base_model: Option<Model>,
+#[derive(Serialize, Deserialize, PartialEq)]
+pub struct Adapter {
+    pub name: &'static str,
+    pub path: &'static str,
+    pub weight: f64,
 }
 
-#[derive(Serialize, Deserialize, Copy, Clone, Sequence, PartialEq)]
+pub trait Join {
+    fn names(&self) -> String;
+    fn paths(&self) -> String;
+    fn weights(&self) -> String;
+}
+
+impl Join for Vec<Adapter> {
+    fn names(&self) -> String {
+        self.iter().map(|a| a.name).collect::<Vec<&str>>().join(",")
+    }
+
+    fn paths(&self) -> String {
+        self.iter().map(|a| a.path).collect::<Vec<&str>>().join(",")
+    }
+
+    fn weights(&self) -> String {
+        self.iter()
+            .map(|a| a.weight.to_string())
+            .collect::<Vec<String>>()
+            .join(",")
+    }
+}
+
+lazy_static::lazy_static! {
+    pub static ref MODELS: Vec<Model> = all::<Model>().collect::<Vec<_>>();
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Copy, Clone, Sequence)]
+#[serde(tag = "type", content = "details")]
 #[serde(rename_all_fields(serialize = "lowercase", deserialize = "lowercase"))]
 pub enum Model {
     StableDiffusionXL,
@@ -23,97 +50,79 @@ pub enum Model {
 }
 
 impl Model {
-    pub fn get_subpath(self) -> String {
+    pub fn name(&self) -> &'static str {
         match self {
-            Model::StableDiffusionXL => String::from("xlbase"),
-            Model::Tintin => String::from("tintin"),
-            Model::Simpsons => String::from("simpsons"),
-            Model::Pixel => String::from("pixel-art"),
-            Model::Stickers => String::from("stickers"),
-            Model::Impressionism => String::from("impressionism"),
-            Model::Lego => String::from("lego"),
-            Model::Ikea => String::from("ikea"),
+            Model::StableDiffusionXL => "Stable Diffusion XL",
+            Model::Tintin => "Tintin",
+            Model::Simpsons => "Simpsons",
+            Model::Pixel => "Pixel Art",
+            Model::Stickers => "Stickers",
+            Model::Impressionism => "Impressionism",
+            Model::Lego => "LEGO",
+            Model::Ikea => "IKEA",
         }
     }
 
-    pub fn get_name(self) -> String {
+    pub fn subpath(&self) -> &'static str {
         match self {
-            Model::StableDiffusionXL => String::from("Stable Diffusion XL"),
-            Model::Tintin => String::from("Tintin"),
-            Model::Simpsons => String::from("Simpsons"),
-            Model::Pixel => String::from("Pixel Art"),
-            Model::Stickers => String::from("Stickers"),
-            Model::Impressionism => String::from("Impressionism"),
-            Model::Lego => String::from("LEGO"),
-            Model::Ikea => String::from("IKEA"),
+            Model::StableDiffusionXL => "xlbase",
+            Model::Tintin => "tintin",
+            Model::Simpsons => "simpsons",
+            Model::Pixel => "pixel-art",
+            Model::Stickers => "stickers",
+            Model::Impressionism => "impressionism",
+            Model::Lego => "lego",
+            Model::Ikea => "ikea",
         }
     }
 
-    pub fn get_basemodel(self) -> Option<Model> {
+    pub fn base_model(&self) -> Option<Model> {
         match self {
             Model::StableDiffusionXL | Model::Tintin | Model::Simpsons => None,
             _ => Some(Model::StableDiffusionXL),
         }
     }
 
-    pub fn from_subpath(subpath: &str) -> Result<Model, Error> {
-        match subpath {
-            "xlbase" => Ok(Model::StableDiffusionXL),
-            "tintin" => Ok(Model::Tintin),
-            "simpsons" => Ok(Model::Simpsons),
-            "pixel-art" => Ok(Model::Pixel),
-            "stickers" => Ok(Model::Stickers),
-            "impressionism" => Ok(Model::Impressionism),
-            "lego" => Ok(Model::Lego),
-            "ikea" => Ok(Model::Ikea),
-            &_ => bail!("Invalid model specified"),
-        }
-    }
-
-    pub fn append_trigger_words(self) -> Option<String> {
+    pub fn triggers(&self) -> Option<&'static str> {
         match self {
             Model::StableDiffusionXL | Model::Ikea => None,
-            Model::Tintin => Some(String::from("((herge_style))")),
-            Model::Simpsons => Some(String::from("((as a simpsons character))")),
-            Model::Pixel => Some(String::from("((pixel))")),
-            Model::Stickers => Some(String::from("((sticker))")),
-            Model::Impressionism => Some(String::from("((in sks style))")),
-            Model::Lego => Some(String::from("((lego minifig))")),
+            Model::Tintin => Some("((herge_style))"),
+            Model::Simpsons => Some("((as a simpsons character))"),
+            Model::Pixel => Some("((pixel))"),
+            Model::Stickers => Some("((sticker))"),
+            Model::Impressionism => Some("((in sks style))"),
+            Model::Lego => Some("((lego minifig))"),
         }
     }
 
-    pub fn get_additional_adapter_weight(self) -> Vec<f64> {
+    pub fn adapters(&self) -> Vec<Adapter> {
         match self {
             Model::StableDiffusionXL | Model::Tintin | Model::Simpsons => vec![],
-            Model::Lego => vec![0.8],
-            Model::Stickers => vec![0.8, 1.0],
-            Model::Pixel => vec![1.2, 1.0],
-            Model::Impressionism => vec![1.2, 1.0],
-            _ => vec![1.2],
-        }
-    }
-
-    pub fn get_additional_adapter_names(self) -> Vec<String> {
-        match self {
-            Model::StableDiffusionXL | Model::Tintin | Model::Simpsons => vec![],
-            Model::Lego => vec![String::from("lego")],
-            Model::Ikea => vec![String::from("ikea")],
-            Model::Stickers => vec![String::from("stickers")],
-            Model::Pixel => vec![String::from("pixel-art")],
-            Model::Impressionism => vec![String::from("impressionism")],
-        }
-    }
-
-    pub fn get_additional_adapter_path(self) -> Vec<String> {
-        match self {
-            Model::StableDiffusionXL | Model::Tintin | Model::Simpsons => vec![],
-            Model::Lego => vec![String::from("lego/legominifig-v1.0-000003.safetensors")],
-            Model::Ikea => vec![String::from("ikea/ikea_instructions_xl_v1_5.safetensors")],
-            Model::Stickers => vec![String::from("stickers/StickersRedmond.safetensors")],
-            Model::Pixel => vec![String::from("pixel-art/pixel-art-xl.safetensors")],
-            Model::Impressionism => vec![String::from(
-                "impressionism/pytorch_lora_weights.safetensors",
-            )],
+            Model::Lego => vec![Adapter {
+                name: "lego",
+                path: "lego/legominifig-v1.0-000003.safetensors",
+                weight: 0.8,
+            }],
+            Model::Ikea => vec![Adapter {
+                name: "ikea",
+                path: "ikea/ikea_instructions_xl_v1_5.safetensors",
+                weight: 1.2,
+            }],
+            Model::Stickers => vec![Adapter {
+                name: "stickers",
+                path: "stickers/StickersRedmond.safetensors",
+                weight: 0.8,
+            }],
+            Model::Pixel => vec![Adapter {
+                name: "pixel",
+                path: "pixel-art/pixel-art-xl.safetensors",
+                weight: 1.2,
+            }],
+            Model::Impressionism => vec![Adapter {
+                name: "impressionism",
+                path: "impressionism/pytorch_lora_weights.safetensors",
+                weight: 1.2,
+            }],
         }
     }
 }

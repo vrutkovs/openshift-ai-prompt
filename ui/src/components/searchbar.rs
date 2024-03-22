@@ -1,4 +1,3 @@
-use enum_iterator::all;
 use patternfly_yew::prelude::*;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
@@ -8,15 +7,11 @@ pub enum Msg {
     Select(Model),
 }
 
-use openshift_ai_prompt_common::models::Model;
-
-lazy_static::lazy_static! {
-    static ref MODELS: Vec<Model> = all::<Model>().collect::<Vec<_>>();
-}
+use openshift_ai_prompt_common::models::{Model, MODELS};
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props {
-    pub on_generate: Callback<(AttrValue, AttrValue)>,
+    pub on_generate: Callback<(AttrValue, Model)>,
 }
 
 pub struct SearchBar {
@@ -41,10 +36,9 @@ impl Component for SearchBar {
             Msg::Generate => {
                 let prompt_input_element = self.input_ref.cast::<HtmlInputElement>().unwrap();
                 let prompt = prompt_input_element.value();
-                ctx.props().on_generate.emit((
-                    prompt.clone().into(),
-                    self.model.get_subpath().clone().into(),
-                ));
+                ctx.props()
+                    .on_generate
+                    .emit((prompt.clone().into(), self.model));
                 self.input = prompt.clone();
                 true
             }
@@ -82,7 +76,7 @@ impl Component for SearchBar {
                             icon = Some(html!(Icon::CheckCircle))
                         }
                         html_nested!(<MenuAction {icon} {onclick}>
-                            <span>{m.get_name()}</span>
+                            <span>{m.name()}</span>
                         </MenuAction>)
                     })}
                     </Dropdown>

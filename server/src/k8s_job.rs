@@ -1,3 +1,4 @@
+use crate::models::Join;
 use crate::{models, Message};
 use log::*;
 
@@ -90,7 +91,7 @@ pub async fn start(
         .collect();
     let result_filename = format!("{s}.png");
 
-    let amended_prompt = match model.append_trigger_words() {
+    let amended_prompt = match model.triggers() {
         Some(s) => format!("{} {}", prompt, s),
         None => prompt,
     };
@@ -148,16 +149,7 @@ pub fn create_job_for_prompt(
     s3_settings: S3Settings,
     result_filename: String,
 ) -> Result<Job, serde_json::Error> {
-    let base_model = model.get_basemodel().unwrap_or(model);
-    let adapter_names = model.get_additional_adapter_names().join(",");
-    let adapter_paths = model.get_additional_adapter_path().join(",");
-    let adapter_weights = model
-        .get_additional_adapter_weight()
-        .iter()
-        .map(|f| f.to_string())
-        .collect::<Vec<_>>()
-        .join(",");
-
+    let base_model = model.base_model().unwrap_or(model);
     let env = serde_json::json!([
         {
             "name": "PROMPT",
@@ -182,16 +174,16 @@ pub fn create_job_for_prompt(
             "value": job_settings.steps.to_string(),
         }, {
             "name": "OPENJOURNEY_MODEL",
-            "value": base_model.get_subpath(),
+            "value": base_model.subpath(),
         }, {
             "name": "ADAPTER_NAMES",
-            "value": adapter_names,
+            "value": model.adapters().names(),
         }, {
             "name": "ADAPTER_PATHS",
-            "value": adapter_paths,
+            "value": model.adapters().paths(),
         }, {
             "name": "ADAPTER_WEIGHTS",
-            "value": adapter_weights,
+            "value": model.adapters().weights(),
         }
     ]);
 
