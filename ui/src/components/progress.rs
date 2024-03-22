@@ -19,17 +19,16 @@ impl Component for ProgressBar {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let message = &ctx.props().message;
-        let percent = ctx.props().percent;
+        let value = ctx.props().percent;
         let error = ctx.props().error;
+        let mut variant = ProgressVariant::Default;
+        if !message.is_empty() && error {
+            variant = ProgressVariant::Danger;
+        }
         html! {
             <>
-                if !message.is_empty() {
-                    if error {
-                        <Progress description={message.to_string()} value={percent} location={ProgressMeasureLocation::Inside} variant={ProgressVariant::Danger} />
-                    }
-                }
-                if percent > 0.0 && percent != 1.0 {
-                    <Progress description={message.to_string()} value={percent} location={ProgressMeasureLocation::Inside}/>
+                if value > 0.0 && value != 1.0 {
+                    <Progress description={message.to_string()} {value} location={ProgressMeasureLocation::Inside} {variant}/>
                 }
             </>
         }
