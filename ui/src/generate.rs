@@ -7,7 +7,7 @@ use yew::prelude::*;
 
 use futures::{SinkExt, StreamExt};
 use gloo::console;
-use reqwasm::websocket::{events::CloseEvent, futures::WebSocket, WebSocketError};
+use reqwasm::websocket::{futures::WebSocket, WebSocketError};
 
 pub fn generate_image(
     prompt: String,
