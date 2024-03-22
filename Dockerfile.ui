@@ -15,7 +15,6 @@ RUN cd ui/ && trunk build --release
 FROM quay.io/packit/nginx-unprivileged:1.23.4
 
 COPY --from=builder /src/ui/dist /app
-COPY --from=builder /src/ui/nginx.conf /etc/nginx/conf.d/ui.conf
-RUN rm -rf /etc/nginx/conf.d/default.conf
+COPY --from=builder /src/ui/nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 8080
