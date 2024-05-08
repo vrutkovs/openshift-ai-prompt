@@ -285,7 +285,7 @@ pub fn create_job_for_prompt(
             "generateName": "picture-",
         },
         "spec": {
-            "backoffLimit": 1,
+            "backoffLimit": 0,
             "template": {
                 "metadata": {
                     "generateName": "picture-",
