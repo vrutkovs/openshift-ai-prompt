@@ -13,6 +13,10 @@ spec:
   lookupPolicy:
     local: false
   tags:
+    - name: openjourney
+      from:
+        kind: DockerImage
+        name: 'quay.io/vrutkovs/openshift-ai-prompt:openjourney'
     - name: ui
       from:
         kind: DockerImage
@@ -21,7 +25,3 @@ spec:
       from:
         kind: DockerImage
         name: 'quay.io/vrutkovs/openshift-ai-prompt:server'
-    - name: openjourney
-      from:
-        kind: DockerImage
-        name: 'quay.io/vrutkovs/openshift-ai-prompt:openjourney'
