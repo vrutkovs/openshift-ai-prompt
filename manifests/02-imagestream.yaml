@@ -17,11 +17,11 @@ spec:
       from:
         kind: DockerImage
         name: 'quay.io/vrutkovs/openshift-ai-prompt:openjourney'
-    - name: ui
-      from:
-        kind: DockerImage
-        name: 'quay.io/vrutkovs/openshift-ai-prompt:ui'
     - name: server
       from:
         kind: DockerImage
         name: 'quay.io/vrutkovs/openshift-ai-prompt:server'
+    - name: ui
+      from:
+        kind: DockerImage
+        name: 'quay.io/vrutkovs/openshift-ai-prompt:ui'
