@@ -75,7 +75,6 @@ s3.upload_fileobj(
     S3_BUCKET_NAME,
     RESULT_FILENAME,
     ExtraArgs={
-        "ACL": "public-read",
         "ContentType": "image/png",
     }
 )
