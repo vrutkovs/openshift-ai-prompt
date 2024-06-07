@@ -47,6 +47,7 @@ pub enum Model {
     Impressionism,
     Lego,
     Ikea,
+    SovietPosters,
 }
 
 impl Model {
@@ -60,6 +61,7 @@ impl Model {
             Model::Impressionism => "Impressionism",
             Model::Lego => "LEGO",
             Model::Ikea => "IKEA",
+            Model::SovietPosters => "SovietPoster",
         }
     }
 
@@ -73,6 +75,7 @@ impl Model {
             Model::Impressionism => "impressionism",
             Model::Lego => "lego",
             Model::Ikea => "ikea",
+            Model::SovietPosters => "soviet-posters",
         }
     }
 
@@ -92,6 +95,7 @@ impl Model {
             Model::Stickers => Some("((sticker))"),
             Model::Impressionism => Some("((in sks style))"),
             Model::Lego => Some("((lego minifig))"),
+            Model::SovietPosters => Some("((soviet poster))"),
         }
     }
 
@@ -121,6 +125,11 @@ impl Model {
             Model::Impressionism => vec![Adapter {
                 name: "impressionism",
                 path: "impressionism/pytorch_lora_weights.safetensors",
+                weight: 1.2,
+            }],
+            Model::SovietPosters => vec![Adapter {
+                name: "soviet-posters",
+                path: "soviet-posters/Soviet-poster.safetensors",
                 weight: 1.2,
             }],
         }
